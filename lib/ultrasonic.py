@@ -7,7 +7,7 @@ Measures distance and alerts when object is too close (30 cm threshold)
 from gpiozero import DistanceSensor
 import time
 
-GPIO pin configuration
+# GPIO pin configuration
 TRIGGER_PIN = 24  # GPIO pin for trigger (output)
 ECHO_PIN = 23  # GPIO pin for echo (input)
 THRESHOLD_CM = 30  # Distance threshold in centimeters
@@ -57,5 +57,5 @@ def main():
         sensor.close()
         print("Sensor closed")
 
-if name == "main":
+if __name__ == "__main__":
     main()
