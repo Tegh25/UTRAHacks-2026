@@ -1,5 +1,6 @@
 import axios from 'axios';
 import FormData from 'form-data';
+import console from 'node:console';
 
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1/speech-to-text';
 
@@ -32,7 +33,7 @@ export async function transcribeAudio(
     filename: `recording.${ext}`,
     contentType: mimeType,
   });
-  form.append('model_id', 'scribe_v1');
+  form.append('model_id', 'scribe_v2');
 
   const response = await axios.post(ELEVENLABS_API_URL, form, {
     headers: {

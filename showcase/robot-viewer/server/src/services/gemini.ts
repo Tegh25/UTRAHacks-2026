@@ -21,7 +21,7 @@ export async function identifyParts(query: string): Promise<GeminiResponse> {
     return mockIdentifyParts(query);
   }
 
-  const model = ai.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const model = ai.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
   const prompt = `You are a robot part identification assistant. Given a user query about a robot and a list of available robot parts, identify which parts are most relevant to the query.
 

@@ -34,6 +34,8 @@ export default function ControlPanel() {
   const highlightParts = useRobotStore((s) => s.highlightParts);
   const selectPart = useRobotStore((s) => s.selectPart);
   const clearHighlights = useRobotStore((s) => s.clearHighlights);
+  const explodeStrength = useRobotStore((s) => s.explodeStrength);
+  const setExplodeStrength = useRobotStore((s) => s.setExplodeStrength);
 
   useEffect(() => {
     getAllParts().then(setParts).catch(console.error);
@@ -67,6 +69,22 @@ export default function ControlPanel() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search parts..."
               className="w-full bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-400"
+            />
+          </div>
+
+          {/* Explode strength */}
+          <div className="px-3 py-2 border-b border-gray-200">
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[10px] text-gray-500 uppercase tracking-wide">Explode</label>
+              <span className="text-[10px] text-gray-400">{explodeStrength}</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={200}
+              value={explodeStrength}
+              onChange={(e) => setExplodeStrength(Number(e.target.value))}
+              className="w-full h-1 accent-blue-600 cursor-pointer"
             />
           </div>
 

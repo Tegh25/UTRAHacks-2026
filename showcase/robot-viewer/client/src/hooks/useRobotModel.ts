@@ -9,6 +9,7 @@ export const useRobotStore = create<RobotState & RobotActions>((set) => ({
   error: null,
   parts: [],
   apiStatus: null,
+  explodeStrength: 100,
 
   highlightParts: (partIds: string[]) => set({ highlightedParts: partIds, error: null }),
   clearHighlights: () => set({ highlightedParts: [], selectedPart: null }),
@@ -18,4 +19,5 @@ export const useRobotStore = create<RobotState & RobotActions>((set) => ({
   setError: (error: string | null) => set({ error }),
   setParts: (parts: RobotPart[]) => set({ parts }),
   setApiStatus: (status: ApiStatus) => set({ apiStatus: status }),
+  setExplodeStrength: (strength: number) => set({ explodeStrength: strength }),
 }));

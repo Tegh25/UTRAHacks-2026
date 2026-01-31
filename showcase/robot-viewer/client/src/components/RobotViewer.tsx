@@ -1,4 +1,4 @@
-import { Suspense, useRef, useEffect, useMemo } from 'react';
+import { Suspense, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Environment, Grid, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -7,72 +7,23 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 const MODEL_PATH = '/models/Buggy.gltf';
 
-const HIGHLIGHT_COLOR = new THREE.Color('#fbbf24');
-const GREY_COLOR = new THREE.Color('#555555');
-const EXPLODE_STRENGTH = 100;
-const LERP_SPEED = 0.2;
-const CAMERA_LERP_SPEED = 0.05;
-const CAMERA_ZOOM_DISTANCE = 1.5;
-
-const DEFAULT_CAMERA_POS = new THREE.Vector3(3, 3, 3);
-const DEFAULT_TARGET = new THREE.Vector3(0, 0, 0);
-
+const HIGHLIGHT_COLOR = new THREE.Color('#c026d3');
+const GREY_COLOR = new THREE.Color('#aaaaaa');
+const LERP_SPEED = 0.5;
 // Deterministic fallback direction for meshes at the exact center
 function deterministicDir(index: number): THREE.Vector3 {
   const angle = (index + 1) * 2.399963; // golden angle
   return new THREE.Vector3(Math.cos(angle), 0.5, Math.sin(angle)).normalize();
 }
 
-function CameraController({
-  controlsRef,
-  targetPosRef,
-  targetLookAtRef,
-  animatingRef,
-}: {
-  controlsRef: React.RefObject<OrbitControlsImpl | null>;
-  targetPosRef: React.RefObject<THREE.Vector3>;
-  targetLookAtRef: React.RefObject<THREE.Vector3>;
-  animatingRef: React.RefObject<boolean>;
-}) {
-  useFrame(({ camera }) => {
-    if (!animatingRef.current) return;
-    const controls = controlsRef.current;
-    if (!controls || !targetPosRef.current || !targetLookAtRef.current) return;
-
-    const posDist = camera.position.distanceTo(targetPosRef.current);
-    const lookDist = controls.target.distanceTo(targetLookAtRef.current);
-
-    // Snap to final position once close enough and release controls
-    if (posDist < 0.1 && lookDist < 0.1) {
-      camera.position.copy(targetPosRef.current);
-      controls.target.copy(targetLookAtRef.current);
-      controls.update();
-      animatingRef.current = false;
-      return;
-    }
-
-    camera.position.lerp(targetPosRef.current, CAMERA_LERP_SPEED);
-    controls.target.lerp(targetLookAtRef.current, CAMERA_LERP_SPEED);
-    controls.update();
-  });
-
-  return null;
-}
-
-function LoadedModel({
-  controlsRef,
-}: {
-  controlsRef: React.RefObject<OrbitControlsImpl | null>;
-}) {
+function LoadedModel() {
   const { scene } = useGLTF(MODEL_PATH);
   const groupRef = useRef<THREE.Group>(null);
-  const cameraTargetPos = useRef(DEFAULT_CAMERA_POS.clone());
-  const cameraTargetLookAt = useRef(DEFAULT_TARGET.clone());
-  const cameraAnimating = useRef(false);
 
   const highlightedParts = useRobotStore((s) => s.highlightedParts);
   const selectPart = useRobotStore((s) => s.selectPart);
   const highlightParts = useRobotStore((s) => s.highlightParts);
+  const explodeStrength = useRobotStore((s) => s.explodeStrength);
 
   // Auto-center and scale
   const { scaleFactor, offset } = useMemo(() => {
@@ -136,48 +87,10 @@ function LoadedModel({
     return entries;
   }, [scene, modelCenter]);
 
-  // When selection changes, compute camera target position
-  useEffect(() => {
-    cameraAnimating.current = true;
-    if (highlightedParts.length === 0) {
-      cameraTargetPos.current.copy(DEFAULT_CAMERA_POS);
-      cameraTargetLookAt.current.copy(DEFAULT_TARGET);
-      return;
-    }
-
-    // Find the selected mesh(es) and compute their world-space center
-    const selectedMeshes = meshEntries.filter(({ partId }) =>
-      highlightedParts.includes(partId)
-    );
-    if (selectedMeshes.length === 0) return;
-
-    const combinedBox = new THREE.Box3();
-    for (const { mesh } of selectedMeshes) {
-      combinedBox.expandByObject(mesh);
-    }
-    const center = combinedBox.getCenter(new THREE.Vector3());
-    const size = combinedBox.getSize(new THREE.Vector3());
-    const partRadius = Math.max(size.x, size.y, size.z) * 0.5;
-
-    // Transform to scene space (apply scale + offset)
-    const worldCenter = new THREE.Vector3(
-      center.x * scaleFactor + offset.x,
-      center.y * scaleFactor + offset.y,
-      center.z * scaleFactor + offset.z,
-    );
-
-    // Position camera at a distance proportional to the part size, offset to the side
-    const dist = Math.max(CAMERA_ZOOM_DISTANCE, partRadius * scaleFactor * 3);
-    const cameraOffset = new THREE.Vector3(dist * 0.7, dist * 0.3, dist * 0.7);
-
-    cameraTargetLookAt.current.copy(worldCenter);
-    cameraTargetPos.current.copy(worldCenter).add(cameraOffset);
-  }, [highlightedParts, meshEntries, scaleFactor, offset]);
-
   // Each frame: highlight selected part, grey out others, animate explode
   useFrame(() => {
     const hasHighlight = highlightedParts.length > 0;
-    const pulse = 0.4 + Math.sin(Date.now() * 0.004) * 0.15;
+    const pulse = 0.6 + Math.sin(Date.now() * 0.004) * 0.2;
 
     for (const entry of meshEntries) {
       const { mesh, partId, originals, origPos, explodeDir, currentOffset } = entry;
@@ -216,7 +129,7 @@ function LoadedModel({
       // --- Explode: push non-highlighted parts outward, lerp back when no selection ---
       const targetOffset = new THREE.Vector3();
       if (hasHighlight && !isHighlighted) {
-        targetOffset.copy(explodeDir).multiplyScalar(EXPLODE_STRENGTH);
+        targetOffset.copy(explodeDir).multiplyScalar(explodeStrength);
       }
 
       currentOffset.lerp(targetOffset, LERP_SPEED);
@@ -236,12 +149,6 @@ function LoadedModel({
 
   return (
     <>
-      <CameraController
-        controlsRef={controlsRef}
-        targetPosRef={cameraTargetPos}
-        targetLookAtRef={cameraTargetLookAt}
-        animatingRef={cameraAnimating}
-      />
       <group ref={groupRef}>
         <primitive
           object={scene}
@@ -290,7 +197,7 @@ export default function RobotViewer() {
       <Environment preset="city" />
 
       <Suspense fallback={<LoadingFallback />}>
-        <LoadedModel controlsRef={controlsRef} />
+        <LoadedModel />
       </Suspense>
 
       <Grid

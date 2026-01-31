@@ -29,6 +29,7 @@ export interface RobotState {
   error: string | null;
   parts: RobotPart[];
   apiStatus: ApiStatus | null;
+  explodeStrength: number;
 }
 
 export interface RobotActions {
@@ -40,4 +41,5 @@ export interface RobotActions {
   setError: (error: string | null) => void;
   setParts: (parts: RobotPart[]) => void;
   setApiStatus: (status: ApiStatus) => void;
+  setExplodeStrength: (strength: number) => void;
 }
