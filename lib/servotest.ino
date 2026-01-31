@@ -1,16 +1,13 @@
+// Simple servo test (1–2 ms PWM @ 50 Hz)
 #include <Servo.h>
 
-// change this to the number of steps on your motor
-#define STEPS 180
+const int SERVO_PIN = 13;  // PWM pin connected to servo signal
 
 Servo servo1;
 
-// the previous reading from the analog input
-// int previous = 0;
-
 void setup() {
-  // set the speed of the motor to 30 RPMs
-  servo1.attach(5);
+  Serial.begin(9600);
+  servo1.attach(SERVO_PIN);
 }
 
 void loop() {
