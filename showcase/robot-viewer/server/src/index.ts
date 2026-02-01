@@ -2,7 +2,7 @@ import 'dotenv/config';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-import express from 'express';
+import express, { type Request, type Response, type NextFunction } from 'express';
 import cors from 'cors';
 import voiceRoutes from './routes/voice.js';
 import partsRoutes from './routes/parts.js';
@@ -64,6 +64,12 @@ if (publicDir) {
     );
   });
 }
+
+// Global error handler: log and return 500
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error('[Server Error]', err?.stack ?? err);
+  res.status(500).json({ error: 'Internal server error' });
+});
 
 const HOST = process.env.HOST || '0.0.0.0';
 app.listen(PORT, HOST, () => {
