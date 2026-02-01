@@ -14,18 +14,18 @@ LineFollowState currentLFState = STATE_LF_FORWARD;
 
 /**
  * Check if left IR sensor detects the line
- * HIGH = line detected
+ * LOW = line detected, HIGH = no line
  */
 bool irLeftDetected() {
-  return digitalRead(IR_LEFT_PIN) == HIGH;
+  return digitalRead(IR_LEFT_PIN) == LOW;
 }
 
 /**
  * Check if right IR sensor detects the line
- * HIGH = line detected
+ * LOW = line detected, HIGH = no line
  */
 bool irRightDetected() {
-  return digitalRead(IR_RIGHT_PIN) == HIGH;
+  return digitalRead(IR_RIGHT_PIN) == LOW;
 }
 
 // ============ STEERING HELPERS ============
