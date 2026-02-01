@@ -251,6 +251,10 @@ The server already uses `process.env.PORT`, binds to `0.0.0.0`, and has a build 
 - **404 on the main page (blank or “Client not built”)** — The server has no `server/public` folder. Run the full build so the client is copied: from `robot-viewer/`, run `cd server && npm run build:full`, then start the server.
 - **404 on API calls** (e.g. parts or voice) — You’re using split hosting: the frontend is on a different domain and is requesting `/api` on its own domain (which has no API). Set **`VITE_API_URL`** in the frontend build env to your backend URL including `/api`, e.g. `https://your-backend.railway.app/api`. Rebuild and redeploy the client.
 
+### CORS / "Access-Control-Allow-Origin" blocked?
+
+The API allows (1) origins in **`CLIENT_URL`** (comma-separated on Railway) and (2) **any origin ending with `.vercel.app`**. Set **`CLIENT_URL`** on Railway to your main Vercel URL (e.g. `https://utra-frontend.vercel.app`), then **redeploy the Railway service**. After that, production and preview Vercel URLs should work.
+
 ## Tech Stack
 
 - React + Vite + TypeScript
