@@ -1,7 +1,4 @@
-/*
-  HC-SR04 Ultrasonic Distance Sensor
-  Measures distance and alerts when object is too close (30 cm threshold)
-*/
+/* HC-SR04 distance sensor. Prints cm and warns when something is too close. */
 
 // GPIO pin configuration
 const int TRIGGER_PIN = 11;  // GPIO pin for trigger (output)

@@ -1,9 +1,4 @@
-/*
-  Servo Control Functions
-  Controls a standard servo motor via PWM
-  Provides position control and sweep functionality
-*/
-
+/* Servo: position, center, sweep. Used for gripper. */
 #include "servo_func.h"
 
 // Servo object

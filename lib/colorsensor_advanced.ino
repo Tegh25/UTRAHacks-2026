@@ -1,22 +1,4 @@
-/*
-  UNO R4 Minima + TCS3200/TCS230 Color Sensor quick test
-
-  What you should see:
-  - Serial output with pulse periods (us) and frequencies (Hz) for CLEAR, RED, GREEN, BLUE
-  - A "dominant color" guess that changes when you move the sensor over colored paper
-  - If you always see "NO PULSE", your OUT/OE/VCC/GND wiring is wrong.
-
-  Wiring (recommended):
-    TCS VCC  -> UNO 5V
-    TCS GND  -> UNO GND
-    TCS OE   -> UNO GND (always enable output)
-    TCS OUT  -> UNO D2
-    TCS S0   -> UNO D7
-    TCS S1   -> UNO D8
-    TCS S2   -> UNO D9
-    TCS S3   -> UNO D10
-*/
-
+/* TCS3200/TCS230 color sensor test. Serial: pulse periods and dominant color. */
 const int PIN_S0  = 7;
 const int PIN_S1  = 8;
 const int PIN_S2  = 9;

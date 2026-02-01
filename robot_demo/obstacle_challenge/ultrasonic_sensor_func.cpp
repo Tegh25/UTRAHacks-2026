@@ -1,9 +1,4 @@
-/*
-  Ultrasonic Sensor Functions (HC-SR04)
-  Measures distance using trigger/echo pulse timing
-  Returns distance in centimeters
-*/
-
+/* HC-SR04: distance in cm. Trigger/echo timing. */
 #include "ultrasonic_sensor_func.h"
 
 // ============ SETUP ============

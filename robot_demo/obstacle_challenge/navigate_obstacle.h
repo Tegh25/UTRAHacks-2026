@@ -1,3 +1,4 @@
+/* Obstacle course: speeds, timings, ultrasonic, servo, FSM states. */
 #ifndef NAVIGATE_OBSTACLE_H
 #define NAVIGATE_OBSTACLE_H
 

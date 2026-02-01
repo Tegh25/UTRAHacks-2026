@@ -1,8 +1,4 @@
-/*
-  IR Obstacle / Proximity Sensors - Arduino R4 Minima
-  For digital IR modules (e.g. FC-51, TCRT5000) with 3 pins: VCC, GND, OUT.
-  Detects obstacles: LOW = obstacle, HIGH = clear (typical for most modules).
-*/
+/* Left/right IR sensors. Prints black when obstacle, white when clear. */
 
 // GPIO pin configuration - adjust for your wiring
 const int IR_LEFT_PIN = 19;   // Left IR sensor digital out

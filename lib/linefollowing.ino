@@ -1,3 +1,4 @@
+/* Two sensors follow a dark line; motors keep robot on it. */
 #define LS 10      // Left sensor
 #define RS 11      // Right sensor
 

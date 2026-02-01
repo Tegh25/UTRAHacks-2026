@@ -1,3 +1,4 @@
+/** Engine sound when driving; volume/pitch follow speed. */
 import { useEffect, useRef } from 'react';
 import { useRobotStore } from '../hooks/useRobotModel';
 import { generateSound } from '../services/api';

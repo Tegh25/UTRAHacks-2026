@@ -1,3 +1,4 @@
+/* Low-level motor control. */
 #include "motor_func.h"
 
 // ============ MOTOR SETUP ============

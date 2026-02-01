@@ -1,3 +1,4 @@
+/** Regenerates UI sound MP3s with ElevenLabs. */
 import 'dotenv/config';
 import { generateSoundEffect } from '../src/services/soundEffects.js';
 import fs from 'fs';

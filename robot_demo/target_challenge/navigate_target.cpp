@@ -1,8 +1,4 @@
-/*
-Navigate Target Challenge
-Robot pathfinding algorithm to locate and stop at black box in center of target
-*/
-
+/* Target FSM: edge→blue, half-time to center, 90° turn, find black. */
 #include "navigate_target.h"
 #include "color_sensor_func.h"  // Include color sensor functions
 #include "motor_func.h"         // Include motor control functions

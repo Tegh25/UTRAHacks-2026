@@ -1,9 +1,4 @@
-/*
-  Obstacle Challenge - Main Program
-  Follows red line, dodges obstacles, picks up/drops off box at blue zones,
-  stops when black is detected.
-*/
-
+/* Obstacle challenge: red line, dodge obstacles, pick/drop box at blue, stop on black. */
 #include <Arduino.h>
 #include "color_sensor_func.h"
 #include "motor_func.h"

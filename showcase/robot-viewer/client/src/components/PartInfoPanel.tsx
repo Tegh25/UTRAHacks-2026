@@ -1,3 +1,4 @@
+/** Part details (name, description, keywords) below right sidebar. */
 import { useEffect, useState, useRef } from 'react';
 import { useRobotStore } from '../hooks/useRobotModel';
 import { getPartDetails } from '../services/api';

@@ -1,3 +1,4 @@
+/** Types for parts, voice, state, sound. */
 export type PartCategory = 'motion' | 'sensors' | 'power' | 'control' | 'structure' | 'communication';
 
 export interface RobotPart {

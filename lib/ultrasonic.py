@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""
-HC-SR04 Ultrasonic Distance Sensor
-Measures distance and alerts when object is too close (30 cm threshold)
-"""
+""" HC-SR04 on Raspberry Pi. Prints distance and warns when too close. """
 
 from gpiozero import DistanceSensor
 import time

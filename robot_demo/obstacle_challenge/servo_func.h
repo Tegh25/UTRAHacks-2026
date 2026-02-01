@@ -1,3 +1,4 @@
+/* Servo pin and angle config. */
 #ifndef SERVO_FUNC_H
 #define SERVO_FUNC_H
 

@@ -1,3 +1,4 @@
+/** Right sidebar: camera, engine sound, tour, challenge algorithms. */
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRobotStore } from '../hooks/useRobotModel';
 import { getAvailableSounds } from '../services/api';

@@ -1,3 +1,4 @@
+/* Ultrasonic pins and range. */
 #ifndef ULTRASONIC_SENSOR_FUNC_H
 #define ULTRASONIC_SENSOR_FUNC_H
 

@@ -1,19 +1,4 @@
-/*
-  Navigate Obstacle Challenge FSM
-
-  Flow:
-  1. Follow red line using IR sensors for correction
-  2. If blue detected (1st time) -> pickup box (scaffolding)
-  3. If obstacle detected by ultrasonic -> dodge right around it
-  4. If blue detected (2nd time) -> drop off box (scaffolding)
-  5. If black detected -> stop, course complete
-
-  Dodge sequence (rectangular path around 9cm x 9cm obstacle):
-    Turn right 90° -> drive past width -> turn left 90° ->
-    drive past length -> turn left 90° -> drive until red found ->
-    turn right 90° to realign
-*/
-
+/* Obstacle FSM: follow red, pickup/drop at blue, dodge ultrasonic obstacles, stop on black. */
 #include "navigate_obstacle.h"
 #include "color_sensor_func.h"
 #include "motor_func.h"

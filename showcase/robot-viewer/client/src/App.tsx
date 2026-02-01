@@ -1,3 +1,4 @@
+/** Main app: 3D robot, parts list, voice, sidebar, sound. */
 import RobotViewer from './components/RobotViewer';
 import ControlPanel from './components/ControlPanel';
 import PartInfoPanel from './components/PartInfoPanel';

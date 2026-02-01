@@ -1,3 +1,4 @@
+/** Voice: audio→text (ElevenLabs), then match parts (Gemini). Text query and status. */
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { transcribeAudio } from '../services/elevenlabs.js';

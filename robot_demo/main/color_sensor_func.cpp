@@ -1,8 +1,4 @@
-/*
-  Color Sensor Function for Robot
-  Reads TCS3200/TCS230 color sensor and returns dominant color as string
-*/
-
+/* TCS3200 color sensor. Returns dominant color as string. */
 #include "color_sensor_func.h"
 
 // Filter select functions

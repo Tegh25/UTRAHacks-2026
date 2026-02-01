@@ -1,3 +1,4 @@
+/* Moves servo 0 → 90 → 180 in a loop. Use to check wiring. */
 // Simple servo test (1–2 ms PWM @ 50 Hz)
 #include <Servo.h>
 

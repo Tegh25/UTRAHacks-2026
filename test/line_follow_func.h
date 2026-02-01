@@ -1,3 +1,4 @@
+/* Line follow pins and speeds. */
 #ifndef LINE_FOLLOW_FUNC_H
 #define LINE_FOLLOW_FUNC_H
 

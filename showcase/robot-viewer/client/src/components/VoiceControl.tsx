@@ -1,3 +1,4 @@
+/** Text or mic input; sends to backend and highlights matching parts. */
 import { useState, type FormEvent } from 'react';
 import { useVoiceRecording } from '../hooks/useVoiceRecording';
 import { useRobotStore } from '../hooks/useRobotModel';

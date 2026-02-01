@@ -1,3 +1,4 @@
+/* Runs both motors forward 1s, then backward 1s. Use to check wiring. */
 int motor1pin1 = 2;
 int motor1pin2 = 3;
 

@@ -1,3 +1,4 @@
+/** Left panel: parts list, search, explode slider, drive toggle. */
 import { useState, useEffect } from 'react';
 import { useRobotStore } from '../hooks/useRobotModel';
 import { getAllParts, getApiStatus } from '../services/api';

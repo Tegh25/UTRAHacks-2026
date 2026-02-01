@@ -1,3 +1,4 @@
+/** Parts: list, search, get one + related. Optional AI descriptions. */
 import { Router, Request, Response } from 'express';
 import { getAllParts, searchParts, getPartDetails, getRelatedParts } from '../services/partMapper.js';
 import { applyGeneratedDescriptions } from '../services/partDescriptions.js';

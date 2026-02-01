@@ -1,3 +1,4 @@
+/* Motor pins and control prototypes. */
 #include "Arduino.h"
 #include <string.h>
 #include <stdio.h>

@@ -1,3 +1,4 @@
+/** Plays UI sounds (click, hover, success) on part interaction. */
 import { useEffect, useRef, useCallback } from 'react';
 import { useRobotStore } from './useRobotModel';
 

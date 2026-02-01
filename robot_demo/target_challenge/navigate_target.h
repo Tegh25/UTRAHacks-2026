@@ -1,3 +1,4 @@
+/* Target challenge: speeds, timings, FSM states. */
 #ifndef NAVIGATE_TARGET_H
 #define NAVIGATE_TARGET_H
 

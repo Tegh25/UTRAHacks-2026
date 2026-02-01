@@ -1,3 +1,4 @@
+/** Robot parts list (id, name, keywords, category). Used by viewer and Gemini. */
 import type { RobotPart, PartCategory } from '../types/index.js';
 
 // Enhanced part metadata with relationships and functional descriptions

@@ -1,3 +1,4 @@
+/** Sounds: list engine sounds, generate audio, serve UI sounds. */
 import { Router } from 'express';
 import { getAvailableSounds, getSoundById, generateSoundEffect, getAvailableUISounds, getUISoundById } from '../services/soundEffects.js';
 

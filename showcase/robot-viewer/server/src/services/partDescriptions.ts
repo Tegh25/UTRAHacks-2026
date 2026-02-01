@@ -1,3 +1,4 @@
+/** Optional Gemini part descriptions; cached per part. */
 import type { RobotPart } from '../types/index.js';
 import { generatePartDescription } from './gemini.js';
 

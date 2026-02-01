@@ -1,8 +1,4 @@
-/*
-  Main program for robot - line following segment
-  Follows a black line using IR sensors and color verification
-*/
-
+/* Main: line follow with IR sensors and color check. */
 #include <Arduino.h>
 #include "color_sensor_func.h"
 #include "line_follow_func.h"

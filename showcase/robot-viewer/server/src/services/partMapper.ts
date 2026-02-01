@@ -1,3 +1,4 @@
+/** Part lookup: search, get by id, get related. Uses robotParts config. */
 import { RobotPart } from '../types/index.js';
 import { robotParts, getPartById, getPartsByCategory } from '../config/robotParts.js';
 

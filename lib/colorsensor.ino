@@ -1,3 +1,4 @@
+/* TCS3200 color sensor. Sends RGB over Serial. */
 // pin definitions
 #define PIN_S0 7
 #define PIN_S1 8

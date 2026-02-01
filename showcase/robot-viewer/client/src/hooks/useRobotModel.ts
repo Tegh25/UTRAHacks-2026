@@ -1,3 +1,4 @@
+/** Global state: highlights, selection, parts, camera, sound. */
 import { create } from 'zustand';
 import type { RobotState, RobotActions, RobotPart, ApiStatus, EngineSound } from '../types/robot';
 

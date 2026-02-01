@@ -2,6 +2,13 @@
 
 **Voice-controlled 3D robot exploration — powered by cutting-edge AI.**
 
+## What's in this repo
+
+- **lib/** – Arduino sketches: IR, ultrasonic, color, motors, servo, line follow.
+- **showcase/robot-viewer/** – Web app: 3D robot, voice/text search (ElevenLabs + Gemini).
+- **robot_demo/** – Full robot challenges (line follow, obstacle, target).
+- **test/** – Test sketches for color sensor and line follow.
+
 An interactive 3D robot model viewer where you can *speak* to explore. Ask "show me the brain" or "where's the wireless module?" and watch the model highlight the right parts. It’s hands-free, intuitive, and built with a unique AI pipeline that turns speech into insight.
 
 ---

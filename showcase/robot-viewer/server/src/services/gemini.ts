@@ -1,3 +1,4 @@
+/** Gemini: query→part IDs. Optional part descriptions. No key = keyword match. */
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GeminiResponse } from '../types/index.js';
 import type { RobotPart } from '../types/index.js';

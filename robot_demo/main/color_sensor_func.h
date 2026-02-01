@@ -1,3 +1,4 @@
+/* Color sensor pins and thresholds. */
 #ifndef COLOR_SENSOR_FUNC_H
 #define COLOR_SENSOR_FUNC_H
 

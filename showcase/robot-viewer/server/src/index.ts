@@ -1,3 +1,4 @@
+/** Express server: CORS, voice/parts/sounds routes, serves client. */
 import 'dotenv/config';
 import path from 'path';
 import { fileURLToPath } from 'url';

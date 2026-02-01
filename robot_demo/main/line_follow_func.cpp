@@ -1,9 +1,4 @@
-/*
-  Line Follow Functions
-  IR sensor-based line following with color verification
-  Uses FSM pattern called from main loop
-*/
-
+/* Line follow: IR sensors + color check, FSM. */
 #include "line_follow_func.h"
 #include "color_sensor_func.h"
 

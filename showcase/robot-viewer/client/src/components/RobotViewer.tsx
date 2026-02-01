@@ -1,3 +1,4 @@
+/** 3D robot: click parts, orbit, drive, highlights/explode. */
 import { Suspense, useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Environment, Grid, useGLTF } from '@react-three/drei';

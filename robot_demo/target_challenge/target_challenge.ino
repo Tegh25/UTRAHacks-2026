@@ -1,7 +1,4 @@
-/*
-  Main program for target challenge
-*/
-
+/* Target challenge: find black center from random start using color. */
 #include <Arduino.h>
 #include "color_sensor_func.h"
 #include "navigate_target.h"

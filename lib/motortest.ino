@@ -1,3 +1,4 @@
+/* Both motors forward then backward in a loop. Use to check wiring. */
 int motor1pin1 = 2;
 int motor1pin2 = 3;
 

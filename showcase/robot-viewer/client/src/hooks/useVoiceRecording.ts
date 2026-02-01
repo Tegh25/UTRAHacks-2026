@@ -1,3 +1,4 @@
+/** Records mic audio; returns blob when you stop. Used for voice search. */
 import { useState, useRef, useCallback } from 'react';
 
 interface UseVoiceRecordingReturn {
