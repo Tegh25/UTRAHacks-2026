@@ -152,6 +152,51 @@ Check real-time API status via `GET /api/voice/status` endpoint.
 | ElevenLabs | https://elevenlabs.io → Profile → API Keys |
 | Google Gemini | https://makersuite.google.com/app/apikey |
 
+## Hosting
+
+You can host the app in two ways: **single server** (client + API on one URL) or **split** (frontend and backend on different hosts).
+
+### Option A: Single server (recommended for hackathon / simple deploy)
+
+Build the client and serve it from the Express server so one URL serves everything.
+
+**One command** (from `robot-viewer/` — builds client, copies to `server/public`, builds server):
+```bash
+cd server && npm run build:full && npm start
+```
+
+Or step by step:
+1. `cd client && npm run build`
+2. Copy build into server: `cp -r client/dist server/public` (Windows: `Copy-Item -Recurse client\dist server\public`)
+3. `cd server && npm run build && npm start`
+
+**Environment variables** (in `server/.env`):
+- `PORT` — port to listen on (default `3001`)
+- `ELEVENLABS_API_KEY`, `GEMINI_API_KEY` — optional; app works in demo mode without them
+- `CLIENT_URL` — leave unset when using single server (same origin)
+
+**Deploy (Railway, Render, Fly.io):** Set root to `showcase/robot-viewer`. Build command: `cd server && npm run build:full`. Start command: `cd server && npm start`. Set `PORT` if required.
+
+### Option B: Split (frontend and backend on different hosts)
+
+Host the client on Vercel/Netlify/Cloudflare Pages and the API on Railway/Render/Fly.io.
+
+1. **Backend:** Deploy the `server/` folder. Set in env:
+   - `PORT` (if needed)
+   - `CLIENT_URL` = your frontend URL (e.g. `https://your-app.vercel.app`) for CORS
+   - `ELEVENLABS_API_KEY`, `GEMINI_API_KEY` (optional)
+
+2. **Frontend:** Deploy the `client/` folder. Set build env:
+   - `VITE_API_URL` = your API base URL (e.g. `https://your-api.railway.app/api`)
+   - Build: `npm run build`; output: `dist`
+
+3. The client uses `VITE_API_URL` when set, otherwise `/api` (same origin).
+
+### Getting 404?
+
+- **404 on the main page (blank or “Client not built”)** — The server has no `server/public` folder. Run the full build so the client is copied: from `robot-viewer/`, run `cd server && npm run build:full`, then start the server.
+- **404 on API calls** (e.g. parts or voice) — You’re using split hosting: the frontend is on a different domain and is requesting `/api` on its own domain (which has no API). Set **`VITE_API_URL`** in the frontend build env to your backend URL including `/api`, e.g. `https://your-backend.railway.app/api`. Rebuild and redeploy the client.
+
 ## Tech Stack
 
 - React + Vite + TypeScript

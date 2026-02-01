@@ -1,7 +1,8 @@
 import axios from 'axios';
 import type { ProcessedVoiceResponse, RobotPart, ApiStatus } from '../types/robot';
 
-const client = axios.create({ baseURL: '/api' });
+const baseURL = import.meta.env.VITE_API_URL ?? '/api';
+const client = axios.create({ baseURL });
 
 export async function processVoiceCommand(audioBlob: Blob): Promise<ProcessedVoiceResponse> {
   const formData = new FormData();
