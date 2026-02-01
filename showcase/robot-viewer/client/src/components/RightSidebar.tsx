@@ -5,6 +5,7 @@ import { getAvailableSounds } from '../services/api';
 type TourStepPart = {
   id: string;
   role: string;
+  funFact?: string;
 };
 
 type TourStep = {
@@ -15,29 +16,100 @@ type TourStep = {
 
 const TOUR_STEPS: TourStep[] = [
   {
-    title: 'Step Title (edit me)',
-    summary: 'Short description of what this step explains. Replace this placeholder text.',
+    title: 'Wheels',
+    summary: 'The front and rear wheels provide locomotion. We tested every tire we had and tuned the drive for the red and green tracks.',
     parts: [
-      { id: 'wheel-1', role: 'Role of part 1 (replace with a real explanation).' },
-      { id: 'wheel-2', role: 'Role of part 2 (replace with a real explanation).' },
+      { id: 'wheel-1', role: 'Front/right wheel. Primary motion component for robot movement.', funFact: 'As a team we together broke like 25 axles.' },
+      { id: 'wheel-2', role: 'Rear/left wheel. Works with wheel-1 for stable driving and turns.', funFact: 'We had every tire lined up and tested and finally chose the first one we got.' },
     ],
   },
   {
-    title: 'Second Step Title (edit me)',
-    summary: 'Explain a mechanism, sensor, or control logic here.',
+    title: 'Base Plate',
+    summary: 'The laser-cut base plate is the structural foundation. Everything mounts to it: wheels, Arduino, sensors, and power.',
     parts: [
-      { id: 'plate-1', role: 'Role of this part in the process.' },
-      { id: 'wheel-1', role: 'Add another relevant part or remove if not needed.' },
+      { id: 'plate-1', role: 'Base plate. Supports all components and keeps the chassis rigid.', funFact: 'None of the laser cut holes fit what we wanted </3' },
     ],
   },
   {
-    title: 'Third Step Title (edit me)',
-    summary: 'Describe what the system does and why these parts matter.',
-    parts: [],
+    title: 'IR Sensors',
+    summary: 'Infrared proximity sensors detect obstacles and line edges. We use them for obstacle avoidance on the red track and line following.',
+    parts: [
+      { id: 'sensor-1', role: 'Left IR sensor. Detects obstacles and reflectance for line following.', funFact: 'We spent way too long debugging which way was "obstacle" vs "clear".' },
+      { id: 'sensor-2', role: 'Right IR sensor. Paired with sensor-1 for symmetric detection.', funFact: 'Calibrating these in the gym lighting was a whole adventure.' },
+    ],
+  },
+  {
+    title: 'Arduino Brain',
+    summary: 'The Arduino Uno runs all our code: line following, obstacle avoidance, bullseye centering, and shooting logic.',
+    parts: [
+      { id: 'arduino-1', role: 'Main microcontroller. Reads sensors, drives motors, and runs the challenge algorithms.', funFact: 'We reuploaded code at the reupload points so many times we lost count.' },
+    ],
+  },
+  {
+    title: 'Motor Driver',
+    summary: 'The L298N motor driver takes low-power signals from the Arduino and drives the wheel motors at the right speed and direction.',
+    parts: [
+      { id: 'motor-driver-1', role: 'H-bridge motor driver. Controls speed and direction of both wheels.', funFact: 'Getting both wheels to actually go the same speed took a lot of trial and error.' },
+    ],
+  },
+  {
+    title: 'Breadboard',
+    summary: 'The breadboard lets us wire sensors and logic without soldering. Easy to change during testing.',
+    parts: [
+      { id: 'breadboard-1', role: 'Solderless prototyping board. Connects Arduino, sensors, and power cleanly.', funFact: 'Half our debugging was "wait, which row is that wire in?"' },
+    ],
+  },
+  {
+    title: 'Power',
+    summary: 'Two 9V batteries: one for the Arduino and sensors, one for the motors. Keeps logic stable when the motors draw current.',
+    parts: [
+      { id: 'battery-1', role: '9V for Arduino and logic. Keeps the brain and sensors running.', funFact: 'We kept a spare in the pit because 9Vs die at the worst times.' },
+      { id: 'battery-2', role: '9V for motors. Dedicated supply so motor spikes do not brown out the Arduino.', funFact: 'Separate battery for motors was a game changer for consistent driving.' },
+    ],
   },
 ];
 
-type Section = 'none' | 'sound' | 'tour';
+type Section = 'none' | 'sound' | 'tour' | 'algorithms';
+
+const BULLSEYE_ALGORITHM = `Section 1: Bullseye (Target Shooting). Find center from random start.
+
+1. Move straight toward the edge (any direction) until the color sensor detects BLUE (blue zone at the wall).
+
+2. Stop. Do a 180° turn (face the opposite direction).
+
+3. Travel straight toward the opposite side. Measure and record the time T until you detect BLUE again (or reach the opposite edge).
+
+4. Half-time = T ÷ 2. This is the time needed to reach the center along this axis.
+
+5. Do a 180° turn again (face back toward the center).
+
+6. Travel forward for exactly half-time (T/2). Stop. You are now at the center along this axis.
+
+7. Do a 90° turn (to align with the perpendicular axis).
+
+8. Move straight until you are in the middle:
+   - Option A: Move until the color sensor detects BLACK (black center zone), then stop.
+   - Option B: Repeat the same edge, measure, half-time procedure on this axis, then stop at center.
+
+9. You are at the black center. Shoot or launch the ball forward for scoring.`;
+
+const RED_TRACK_ALGORITHM = `Red Track. Obstacle avoidance with ultrasonic.
+
+1. Follow the red line (line following as normal).
+
+2. Continuously read the ultrasonic sensor for distance to obstacles ahead.
+
+3. If distance < 15 cm (or 10 cm; pick a threshold, e.g. 10 to 15 cm):
+   - Stop forward motion.
+   - Execute a semi-circle around the obstacle:
+     - Turn ~90° in one direction (e.g. left or right).
+     - Drive forward in an arc for a set time or until the line is detected again.
+     - Turn back toward the line (about 90° the other way) to rejoin the path.
+   - Resume line following.
+
+4. If distance ≥ threshold, keep following the line as normal.
+
+5. Repeat until you reach the end of the red track (e.g. box drop off, reupload point).`;
 
 export default function RightSidebar() {
   const [activeSection, setActiveSection] = useState<Section>('none');
@@ -85,6 +157,7 @@ export default function RightSidebar() {
         ...tourPart,
         name: match?.name ?? tourPart.id,
         description: match?.description ?? null,
+        funFact: tourPart.funFact,
       };
     });
   }, [parts, step.parts]);
@@ -302,6 +375,58 @@ export default function RightSidebar() {
           )}
         </div>
 
+        {/* Challenge Algorithms Section */}
+        <div className="border-b border-gray-200">
+          <button
+            onClick={() => toggleSection('algorithms')}
+            className="w-full px-3 py-2 flex items-center justify-between hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 text-gray-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                />
+              </svg>
+              <span className="text-xs text-gray-700 font-medium">Challenge Algorithms</span>
+            </div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className={`h-4 w-4 text-gray-400 transition-transform ${activeSection === 'algorithms' ? 'rotate-180' : ''}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {activeSection === 'algorithms' && (
+            <div className="px-3 pb-3 space-y-3">
+              <div>
+                <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1.5">Bullseye (Section 1)</div>
+                <pre className="text-[10px] text-gray-700 leading-relaxed whitespace-pre-wrap font-sans bg-gray-50 border border-gray-200 rounded-lg p-2.5 max-h-[280px] overflow-y-auto custom-scrollbar">
+                  {BULLSEYE_ALGORITHM}
+                </pre>
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1.5">Red Track (obstacle avoidance)</div>
+                <pre className="text-[10px] text-gray-700 leading-relaxed whitespace-pre-wrap font-sans bg-gray-50 border border-gray-200 rounded-lg p-2.5 max-h-[220px] overflow-y-auto custom-scrollbar">
+                  {RED_TRACK_ALGORITHM}
+                </pre>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Tour Guide Section */}
         <div>
           <button
@@ -350,7 +475,7 @@ export default function RightSidebar() {
                 {resolvedParts.length === 0 ? (
                   <div className="text-[10px] text-gray-400">No parts assigned to this step.</div>
                 ) : (
-                  <div className="max-h-[120px] overflow-y-auto custom-scrollbar space-y-1">
+                  <div className="max-h-[200px] overflow-y-auto custom-scrollbar space-y-1">
                     {resolvedParts.map((part) => (
                       <div key={part.id} className="bg-gray-50 border border-gray-200 rounded-lg p-2">
                         <div className="flex items-center justify-between">
@@ -358,6 +483,9 @@ export default function RightSidebar() {
                           <div className="text-[9px] text-gray-400">{part.id}</div>
                         </div>
                         <div className="text-[10px] text-gray-500">{part.role}</div>
+                        {part.funFact && (
+                          <div className="text-[9px] text-gray-400 mt-1 italic">Fun fact: {part.funFact}</div>
+                        )}
                       </div>
                     ))}
                   </div>

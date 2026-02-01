@@ -5,6 +5,7 @@ import { applyGeneratedDescriptions } from '../services/partDescriptions.js';
 const router = Router();
 
 // GET /api/parts - Return all parts
+// Note: ai=true triggers one Gemini call per part for description generation; avoid on list load
 router.get('/', async (req: Request, res: Response) => {
   try {
     const forceAI = req.query.ai === 'true' || req.query.ai === '1';

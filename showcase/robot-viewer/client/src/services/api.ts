@@ -16,20 +16,21 @@ export async function processTextQuery(query: string): Promise<ProcessedVoiceRes
   return data;
 }
 
+// Load parts without AI description generation to avoid many Gemini calls on page load
 export async function getAllParts(): Promise<RobotPart[]> {
-  const { data } = await client.get('/parts', { params: { ai: true } });
+  const { data } = await client.get('/parts');
   return data.parts;
 }
 
 export async function getPartDetails(
   partId: string
 ): Promise<{ part: RobotPart; relatedParts: RobotPart[] }> {
-  const { data } = await client.get(`/parts/${partId}`, { params: { ai: true } });
+  const { data } = await client.get(`/parts/${partId}`);
   return data;
 }
 
 export async function searchParts(query: string): Promise<RobotPart[]> {
-  const { data } = await client.get('/parts/search', { params: { q: query, ai: true } });
+  const { data } = await client.get('/parts/search', { params: { q: query } });
   return data.parts;
 }
 
