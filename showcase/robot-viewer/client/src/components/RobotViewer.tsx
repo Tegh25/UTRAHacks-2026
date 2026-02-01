@@ -756,18 +756,18 @@ function CameraRig() {
     active: boolean;
     elapsed: number;
     duration: number;
-    startPos: THREE.Vector3;
-    endPos: THREE.Vector3;
-    startTarget: THREE.Vector3;
-    endTarget: THREE.Vector3;
+    startOffset: THREE.Vector3;
+    endOffset: THREE.Vector3;
+    startTargetOffset: THREE.Vector3;
+    endTargetOffset: THREE.Vector3;
   }>({
     active: false,
     elapsed: 0,
     duration: 0.6,
-    startPos: new THREE.Vector3(),
-    endPos: new THREE.Vector3(),
-    startTarget: new THREE.Vector3(),
-    endTarget: new THREE.Vector3(),
+    startOffset: new THREE.Vector3(),
+    endOffset: new THREE.Vector3(),
+    startTargetOffset: new THREE.Vector3(),
+    endTargetOffset: new THREE.Vector3(),
   });
 
   useEffect(() => {
@@ -780,20 +780,20 @@ function CameraRig() {
         offset: camera.position.clone().sub(carPos),
         targetOffset: orbit.target.clone().sub(carPos),
       };
+      transitionRef.current.active = false;
+      cameraTransitionRef.active = false;
       return;
     }
 
     if (lastThirdRef.current) {
       const carPos = carPoseRef.position;
-      const desiredPos = carPos.clone().add(lastThirdRef.current.offset);
-      const desiredTarget = carPos.clone().add(lastThirdRef.current.targetOffset);
       transitionRef.current.active = true;
       cameraTransitionRef.active = true;
       transitionRef.current.elapsed = 0;
-      transitionRef.current.startPos.copy(camera.position);
-      transitionRef.current.endPos.copy(desiredPos);
-      transitionRef.current.startTarget.copy(orbit.target);
-      transitionRef.current.endTarget.copy(desiredTarget);
+      transitionRef.current.startOffset.copy(camera.position).sub(carPos);
+      transitionRef.current.endOffset.copy(lastThirdRef.current.offset);
+      transitionRef.current.startTargetOffset.copy(orbit.target).sub(carPos);
+      transitionRef.current.endTargetOffset.copy(lastThirdRef.current.targetOffset);
     }
   }, [cameraMode, camera, controls]);
 
@@ -821,12 +821,14 @@ function CameraRig() {
     const t = Math.min(transitionRef.current.elapsed / transitionRef.current.duration, 1);
     const eased = t * t * (3 - 2 * t);
 
-    camera.position.lerpVectors(transitionRef.current.startPos, transitionRef.current.endPos, eased);
-    orbit.target.lerpVectors(
-      transitionRef.current.startTarget,
-      transitionRef.current.endTarget,
-      eased
-    );
+    const carPos = carPoseRef.position;
+    const startPos = carPos.clone().add(transitionRef.current.startOffset);
+    const endPos = carPos.clone().add(transitionRef.current.endOffset);
+    const startTarget = carPos.clone().add(transitionRef.current.startTargetOffset);
+    const endTarget = carPos.clone().add(transitionRef.current.endTargetOffset);
+
+    camera.position.lerpVectors(startPos, endPos, eased);
+    orbit.target.lerpVectors(startTarget, endTarget, eased);
     orbit.update();
 
     if (t >= 1) {
