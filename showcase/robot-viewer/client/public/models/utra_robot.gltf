@@ -38,7 +38,7 @@
 				-0.196033,					0.0189854,					-0.015548,					1
 			]
 			,"mesh": 0
-			,"name": "Infrared Sensor-1"		}
+			,"name": "sensor-1"		}
 ,
 		{
 			"matrix": [
@@ -58,7 +58,7 @@
 				-0.0606198,					0.0141622,					-0.0150411,					1
 			]
 			,"mesh": 2
-			,"name": "Infrared Sensor-2"		}
+			,"name": "sensor-2"		}
 ,
 		{
 			"matrix": [
@@ -88,7 +88,7 @@
 				-0.141754,					0.0193503,					-0.144251,					1
 			]
 			,"mesh": 5
-			,"name": "ARDUINO UNO R3-1"		}
+			,"name": "arduino-1"		}
 ,
 		{
 			"matrix": [
@@ -98,7 +98,7 @@
 				-0.106384,					0.0128012,					-0.165724,					1
 			]
 			,"mesh": 6
-			,"name": "L298N-1"		}
+			,"name": "motor-driver-1"		}
 ,
 		{
 			"matrix": [
@@ -108,7 +108,7 @@
 				-0.127613,					0.0262954,					-0.0733287,					1
 			]
 			,"mesh": 7
-			,"name": "Breadboard_400pin-1"		}
+			,"name": "breadboard-1"		}
 ,
 		{
 			"matrix": [
@@ -118,7 +118,7 @@
 				-0.127763,					0.0149803,					-0.181036,					1
 			]
 			,"mesh": 8
-			,"name": "battery(9V)-1"		}
+			,"name": "battery-1"		}
 ,
 		{
 			"matrix": [
@@ -128,7 +128,7 @@
 				-0.0877883,					0.0166923,					-0.151051,					1
 			]
 			,"mesh": 9
-			,"name": "battery(9V)-2"		}
+			,"name": "battery-2"		}
 	],
 	"cameras": [
 		{
