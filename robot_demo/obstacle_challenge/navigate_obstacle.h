@@ -1,54 +1,55 @@
 #ifndef NAVIGATE_OBSTACLE_H
 #define NAVIGATE_OBSTACLE_H
 
-/*
-  navigate_obstacle.h
-
-  Section 2 (Obstacle Course) finite state machine interface.
-
-  This file exists so your main .ino can include Section 2
-  without mixing its logic into Section 1.
-*/
-
 #include <Arduino.h>
 
-// ======================= ULTRASONIC PINS =======================
-//
-// Used to detect cardboard obstacles.
-// Obstacles are NOT detected by color.
-//
-#define ULTRASONIC_TRIG A0
-#define ULTRASONIC_ECHO A1
+// ============ OBSTACLE COURSE CONFIGURATION ============
 
-// ======================= GRIPPER SERVO PIN =======================
-//
-// Servo controls the claw that holds the box.
-// Change this pin if your wiring is different.
-//
-#define GRIPPER_SERVO_PIN  A2
+// Speeds
+#define OBS_FOLLOW_SPEED   150  // Speed while following line
+#define OBS_TURN_SPEED     120  // Speed for 90-degree turns
+#define OBS_DODGE_SPEED    140  // Speed while dodging around obstacle
+#define OBS_SEARCH_SPEED   100  // Speed while searching for red line
 
-// ======================= SECTION 2 STATES =======================
-//
-// Key reliability idea:
-// - Each state does one clear job.
-// - Avoid mixing obstacle avoidance with box actions.
-//
+// Turn timing (calibrate to your robot)
+#define OBS_TURN_90_TIME   500  // ms for a 90-degree turn
+
+// Obstacle detection
+#define OBS_DETECT_CM      15.0  // Distance threshold to trigger dodge (cm)
+
+// Dodge geometry (obstacle is ~9cm x 9cm, add margin)
+#define DODGE_SIDE_TIME    400   // ms to drive past obstacle width
+#define DODGE_LENGTH_TIME  600   // ms to drive past obstacle length
+
+// Sensor timing
+#define OBS_SENSOR_DELAY   30    // ms between sensor checks in follow state
+
+// ============ FSM STATES ============
 enum ObstacleState {
-  OBS_FOLLOW_RED,        // Normal driving along red path
-  OBS_DODGE_AWAY,        // Initial turn to avoid obstacle
-  OBS_CLEAR_PAST,        // Move forward to fully clear obstacle
-  OBS_ARC_BACK_TO_RED,   // Curve back until red is detected again
-  OBS_PICKUP_BOX,        // Stop + close gripper at a blue zone
-  OBS_DROPOFF_BOX,       // Stop + open gripper at a blue zone
-  OBS_FAILSAFE_SEARCH,   // Backup if red detection fails
-  OBS_COMPLETE
+  OBS_FOLLOW_RED,          // Following red line, checking for obstacles/blue/black
+  OBS_PICKUP_BOX,          // Blue detected (1st time) - pickup scaffolding
+  OBS_DROPOFF_BOX,         // Blue detected (2nd time) - dropoff scaffolding
+  OBS_DODGE_TURN_RIGHT,    // Turn right 90° away from obstacle
+  OBS_DODGE_PASS_SIDE,     // Drive forward to clear obstacle width
+  OBS_DODGE_TURN_FORWARD,  // Turn left 90° to face parallel to line
+  OBS_DODGE_PASS_LENGTH,   // Drive forward to clear obstacle length
+  OBS_DODGE_TURN_TO_LINE,  // Turn left 90° to face toward line
+  OBS_DODGE_FIND_RED,      // Drive forward until red line found
+  OBS_DODGE_ALIGN,         // Turn right 90° to realign with line direction
+  OBS_COMPLETE             // Black detected - course finished
 };
 
-// Reset the FSM when entering Section 2.
-// Call once when you switch from Section 1 to Section 2.
-void obstacleResetFSM();
+// ============ FUNCTION PROTOTYPES ============
 
-// Call repeatedly in loop() while running Section 2.
+// Call once in setup() before entering the obstacle course
+void obstacleSetup();
+
+// Call repeatedly in loop() to run the FSM
 void navigateObstacleFSM();
 
-#endif
+// Color helpers
+bool obsIsRed();
+bool obsIsBlue();
+bool obsIsBlack();
+
+#endif  // NAVIGATE_OBSTACLE_H
