@@ -5,14 +5,14 @@ import * as THREE from 'three';
 import { useRobotStore } from '../hooks/useRobotModel';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
-const MODEL_PATH = '/models/Buggy.gltf';
+const MODEL_PATH = '/models/utra_robot.gltf';
 
 const HIGHLIGHT_COLOR = new THREE.Color('#c026d3');
 const GREY_COLOR = new THREE.Color('#aaaaaa');
 const LERP_SPEED = 0.5;
 
 // Add wheel mesh IDs here — click a wheel in the viewer to find its partId
-const WHEEL_PART_IDS: string[] = ["body_113"];
+const WHEEL_PART_IDS: string[] = ["wheel-1", "wheel-2"];
 const WHEEL_SPIN_SPEED = 5; // radians per second
 // Deterministic fallback direction for meshes at the exact center
 function deterministicDir(index: number): THREE.Vector3 {
@@ -62,11 +62,19 @@ function LoadedModel() {
       explodeDir: THREE.Vector3;
       currentOffset: THREE.Vector3;
     }[] = [];
+    const partIdCounts = new Map<string, number>();
+
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
-        const partId = mesh.name || mesh.parent?.name;
-        if (!partId) return;
+        const baseName = mesh.name || mesh.parent?.name;
+        if (!baseName) return;
+
+        // Make partId unique by adding index if there are multiple meshes with same name
+        const count = partIdCounts.get(baseName) || 0;
+        partIdCounts.set(baseName, count + 1);
+        const partId = count > 0 ? `${baseName}_${count}` : baseName;
+
         const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 
         // Compute world-space center of this mesh for the explode direction
@@ -111,23 +119,26 @@ function LoadedModel() {
         const orig = originals[i] as THREE.MeshStandardMaterial;
 
         if (isHighlighted) {
+          std.color.copy(HIGHLIGHT_COLOR);
           std.emissive.copy(HIGHLIGHT_COLOR);
-          std.emissiveIntensity = pulse;
-          std.color.copy(orig.color);
+          std.emissiveIntensity = pulse * 3;
+          std.map = null; // Remove texture to show color
           std.opacity = 1;
           std.transparent = false;
           std.depthWrite = true;
         } else if (hasHighlight) {
+          std.color.copy(GREY_COLOR);
           std.emissive.set('#000000');
           std.emissiveIntensity = 0;
-          std.color.copy(GREY_COLOR);
+          std.map = orig.map; // Restore texture
           std.opacity = 0.4;
           std.transparent = true;
           std.depthWrite = false;
         } else {
+          std.color.copy(orig.color);
           std.emissive.copy(orig.emissive);
           std.emissiveIntensity = orig.emissiveIntensity;
-          std.color.copy(orig.color);
+          std.map = orig.map;
           std.opacity = orig.opacity;
           std.transparent = orig.transparent;
           std.depthWrite = true;
@@ -145,8 +156,9 @@ function LoadedModel() {
 
       // --- Wheel spin: rotate wheel meshes when ground animation is active ---
       if (showGround && WHEEL_PART_IDS.includes(partId)) {
+        const direction = partId === 'wheel-2' ? 1 : -1;
         // eslint-disable-next-line react-hooks/immutability -- imperative Three.js mutation in useFrame
-        mesh.rotation.x += WHEEL_SPIN_SPEED * delta;
+        mesh.rotation.z += WHEEL_SPIN_SPEED * delta * direction;
       }
     }
   });
@@ -180,7 +192,7 @@ const LINE_SPREAD = 10;
 const LINE_LENGTH = 2;
 const LINE_WIDTH = 0.1;
 const LINE_SPEED = 10;
-const MOVE_DIRECTION = 90; // degrees — 0 = +X, 90 = +Z, etc.
+const MOVE_DIRECTION = 0; // degrees — 0 = +X, 90 = +Z, etc.
 
 // Pre-compute random positions outside the component to satisfy React purity rules
 const INITIAL_LINE_POSITIONS = Array.from({ length: LINE_COUNT }, () => ({
