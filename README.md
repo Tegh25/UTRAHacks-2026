@@ -9,7 +9,20 @@
 - **robot_demo/** – Full robot challenges (line follow, obstacle, target).
 - **test/** – Test sketches for color sensor and line follow.
 
-An interactive 3D robot model viewer where you can *speak* to explore. Ask "show me the brain" or "where's the wireless module?" and watch the model highlight the right parts. It’s hands-free, intuitive, and built with a unique AI pipeline that turns speech into insight.
+An interactive 3D robot model viewer where you can *speak* to explore. Ask "show me the brain" or "where's the wireless module?" and watch the model highlight the right parts. It's hands-free, intuitive, and built with a unique AI pipeline that turns speech into insight.
+
+---
+
+## The Robot
+
+<div align="center">
+  <img src="showcase/robot-viewer/client/public/bot1.png" width="400" />
+  <img src="showcase/robot-viewer/client/public/bot2.png" width="400" />
+  <img src="showcase/robot-viewer/client/public/bot3.png" width="400" />
+  <img src="showcase/robot-viewer/client/public/bot4.png" width="400" />
+  <img src="showcase/robot-viewer/client/public/bot5.png" width="400" />
+  <img src="showcase/robot-viewer/client/public/bot6.png" width="400" />
+</div>
 
 ---
 
