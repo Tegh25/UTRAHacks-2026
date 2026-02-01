@@ -1,47 +1,51 @@
 #include "motor_func.h"
 
-/*
-  motor_func.cpp
+// ============ MOTOR SETUP ============
 
-  Implements all low-level motor control.
-
-  Reliability principle:
-  - Navigation code should only call these functions.
-  - That way, if motion is wrong, you debug in one place.
-*/
-
-// ======================= SETUP =======================
-
+/**
+ * Initialize motor pins
+ * Call this from setup() in main .ino file
+ */
 void motorSetup() {
-  // Configure all motor pins as OUTPUT.
   pinMode(MOTOR_L_IN1, OUTPUT);
   pinMode(MOTOR_L_IN2, OUTPUT);
   pinMode(MOTOR_L_PWM, OUTPUT);
-
   pinMode(MOTOR_R_IN1, OUTPUT);
   pinMode(MOTOR_R_IN2, OUTPUT);
   pinMode(MOTOR_R_PWM, OUTPUT);
 
-  // Safety: ensure robot is not moving when powered on.
+  // Start with motors stopped
   motorStop();
+
+  Serial.println("[MOTOR] Motor system initialized");
 }
 
-// ======================= BASIC MOTION =======================
+// ============ MOTOR CONTROL FUNCTIONS ============
 
+/**
+ * Move robot forward at specified speed
+ * Speed: 0-255 PWM value
+ */
 void motorMoveForward(int speed) {
-  // Left motor forward: IN1 = HIGH, IN2 = LOW
+  // Left motor forward
   digitalWrite(MOTOR_L_IN1, HIGH);
   digitalWrite(MOTOR_L_IN2, LOW);
   analogWrite(MOTOR_L_PWM, speed);
 
-  // Right motor forward: IN1 = HIGH, IN2 = LOW
+  // Right motor forward
   digitalWrite(MOTOR_R_IN1, HIGH);
   digitalWrite(MOTOR_R_IN2, LOW);
   analogWrite(MOTOR_R_PWM, speed);
+
+  Serial.print("[MOTOR] Forward at speed: ");
+  Serial.println(speed);
 }
 
+/**
+ * Move robot backward at specified speed
+ */
 void motorMoveBackward(int speed) {
-  // Left motor backward: IN1 = LOW, IN2 = HIGH
+  // Left motor backward
   digitalWrite(MOTOR_L_IN1, LOW);
   digitalWrite(MOTOR_L_IN2, HIGH);
   analogWrite(MOTOR_L_PWM, speed);
@@ -50,37 +54,53 @@ void motorMoveBackward(int speed) {
   digitalWrite(MOTOR_R_IN1, LOW);
   digitalWrite(MOTOR_R_IN2, HIGH);
   analogWrite(MOTOR_R_PWM, speed);
+
+  Serial.print("[MOTOR] Backward at speed: ");
+  Serial.println(speed);
 }
 
+/**
+ * Turn robot left for specified time
+ * Left motor backward, right motor forward
+ */
 void motorTurnLeft(int speed, unsigned long timeMs) {
-  // Turn left in place by:
-  // - left wheel backward
-  // - right wheel forward
+  Serial.print("[MOTOR] Turn left at speed: ");
+  Serial.print(speed);
+  Serial.print(" for ");
+  Serial.print(timeMs);
+  Serial.println(" ms");
 
+  // Left motor backward
   digitalWrite(MOTOR_L_IN1, LOW);
   digitalWrite(MOTOR_L_IN2, HIGH);
   analogWrite(MOTOR_L_PWM, speed);
 
+  // Right motor forward
   digitalWrite(MOTOR_R_IN1, HIGH);
   digitalWrite(MOTOR_R_IN2, LOW);
   analogWrite(MOTOR_R_PWM, speed);
 
-  // Timed turning is not perfect, but it's simple and consistent.
   delay(timeMs);
-
-  // Always stop after a timed turn to avoid drifting.
   motorStop();
 }
 
+/**
+ * Turn robot right for specified time
+ * Left motor forward, right motor backward
+ */
 void motorTurnRight(int speed, unsigned long timeMs) {
-  // Turn right in place by:
-  // - left wheel forward
-  // - right wheel backward
+  Serial.print("[MOTOR] Turn right at speed: ");
+  Serial.print(speed);
+  Serial.print(" for ");
+  Serial.print(timeMs);
+  Serial.println(" ms");
 
+  // Left motor forward
   digitalWrite(MOTOR_L_IN1, HIGH);
   digitalWrite(MOTOR_L_IN2, LOW);
   analogWrite(MOTOR_L_PWM, speed);
 
+  // Right motor backward
   digitalWrite(MOTOR_R_IN1, LOW);
   digitalWrite(MOTOR_R_IN2, HIGH);
   analogWrite(MOTOR_R_PWM, speed);
@@ -89,6 +109,9 @@ void motorTurnRight(int speed, unsigned long timeMs) {
   motorStop();
 }
 
+/**
+ * Stop all motors
+ */
 void motorStop() {
   // Stop left motor
   digitalWrite(MOTOR_L_IN1, LOW);
@@ -99,47 +122,44 @@ void motorStop() {
   digitalWrite(MOTOR_R_IN1, LOW);
   digitalWrite(MOTOR_R_IN2, LOW);
   analogWrite(MOTOR_R_PWM, 0);
+
+  Serial.println("[MOTOR] Stop");
 }
 
-// ======================= HELPER TURNS =======================
-//
-// These values are rough defaults.
-// You can tune them if needed.
+// ============ HELPER TURN FUNCTIONS ============
 
-void turn180() {
-  motorTurnRight(120, 1000);
+/**
+ * Turn around 180 degrees
+ * @param speed Motor PWM speed for turning
+ * @param timeMs Duration of the turn in milliseconds
+ */
+void turn180(int speed, unsigned long timeMs) {
+  Serial.println("[MOTOR] Executing 180-degree turn");
+  motorTurnRight(speed, timeMs);
+  delay(100);
+  motorStop();
 }
 
-void turn90Left() {
-  motorTurnLeft(120, 500);
+/**
+ * Turn 90 degrees left
+ * @param speed Motor PWM speed for turning
+ * @param timeMs Duration of the turn in milliseconds
+ */
+void turn90Left(int speed, unsigned long timeMs) {
+  Serial.println("[MOTOR] Executing 90-degree left turn");
+  motorTurnLeft(speed, timeMs);
+  delay(100);
+  motorStop();
 }
 
-void turn90Right() {
-  motorTurnRight(120, 500);
-}
-
-// ======================= CURVED MOTION =======================
-
-void motorMoveCurve(int leftSpeed, int rightSpeed) {
-  /*
-    Creates a smooth arc using unequal wheel speeds.
-
-    Differential drive rule:
-    - If rightSpeed > leftSpeed -> robot curves LEFT
-    - If leftSpeed > rightSpeed -> robot curves RIGHT
-
-    Why Section 2 needs this:
-    After dodging a box, the robot may be offset from the red line.
-    Driving straight could remain parallel forever.
-    Curving forces the robot to cross the red line again.
-  */
-
-  // Both wheels forward, different PWM values.
-  digitalWrite(MOTOR_L_IN1, HIGH);
-  digitalWrite(MOTOR_L_IN2, LOW);
-  analogWrite(MOTOR_L_PWM, leftSpeed);
-
-  digitalWrite(MOTOR_R_IN1, HIGH);
-  digitalWrite(MOTOR_R_IN2, LOW);
-  analogWrite(MOTOR_R_PWM, rightSpeed);
+/**
+ * Turn 90 degrees right
+ * @param speed Motor PWM speed for turning
+ * @param timeMs Duration of the turn in milliseconds
+ */
+void turn90Right(int speed, unsigned long timeMs) {
+  Serial.println("[MOTOR] Executing 90-degree right turn");
+  motorTurnRight(speed, timeMs);
+  delay(100);
+  motorStop();
 }

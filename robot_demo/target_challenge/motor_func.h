@@ -17,13 +17,13 @@
 // Motor initialization
 void motorSetup();
 
-// Motor control functions (scaffolding - to be implemented)
+// Motor control functions
 void motorMoveForward(int speed);
 void motorMoveBackward(int speed);
 void motorTurnLeft(int speed, unsigned long timeMs);
 void motorTurnRight(int speed, unsigned long timeMs);
 void motorStop();
 
-void turn180();
-void turn90Left();
-void turn90Right();
+void turn180(int speed, unsigned long timeMs);
+void turn90Left(int speed, unsigned long timeMs);
+void turn90Right(int speed, unsigned long timeMs);

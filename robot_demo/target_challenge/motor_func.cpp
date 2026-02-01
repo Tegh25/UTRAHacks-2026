@@ -1,5 +1,4 @@
 #include "motor_func.h"
-#include "navigate_target.h"
 
 // ============ MOTOR SETUP ============
 
@@ -131,30 +130,36 @@ void motorStop() {
 
 /**
  * Turn around 180 degrees
+ * @param speed Motor PWM speed for turning
+ * @param timeMs Duration of the turn in milliseconds
  */
-void turn180() {
+void turn180(int speed, unsigned long timeMs) {
   Serial.println("[MOTOR] Executing 180-degree turn");
-  motorTurnRight(MOTOR_TURN_SPEED, TURN_180_TIME);
+  motorTurnRight(speed, timeMs);
   delay(100);
   motorStop();
 }
 
 /**
  * Turn 90 degrees left
+ * @param speed Motor PWM speed for turning
+ * @param timeMs Duration of the turn in milliseconds
  */
-void turn90Left() {
+void turn90Left(int speed, unsigned long timeMs) {
   Serial.println("[MOTOR] Executing 90-degree left turn");
-  motorTurnLeft(MOTOR_TURN_SPEED, TURN_90_TIME);
+  motorTurnLeft(speed, timeMs);
   delay(100);
   motorStop();
 }
 
 /**
  * Turn 90 degrees right
+ * @param speed Motor PWM speed for turning
+ * @param timeMs Duration of the turn in milliseconds
  */
-void turn90Right() {
+void turn90Right(int speed, unsigned long timeMs) {
   Serial.println("[MOTOR] Executing 90-degree right turn");
-  motorTurnRight(MOTOR_TURN_SPEED, TURN_90_TIME);
+  motorTurnRight(speed, timeMs);
   delay(100);
   motorStop();
 }

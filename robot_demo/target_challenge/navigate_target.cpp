@@ -156,7 +156,7 @@ void navigateTargetFSM() {
       if (isBlueZoneDetected()) {
         Serial.println("[NAV] Blue zone detected - stopping");
         motorStop();
-        turn180();
+        turn180(MOTOR_TURN_SPEED, TURN_180_TIME);
         startTime = millis();
 
         Serial.println("[NAV STATE] FOUND_FIRST_BLUE - Turning around to cross");
@@ -205,7 +205,7 @@ void navigateTargetFSM() {
     case STATE_RETURN_HALF_TIME:
       Serial.println("[NAV STATE] RETURN_HALF_TIME - Moving back half distance");
       delay(200);
-      turn180();
+      turn180(MOTOR_TURN_SPEED, TURN_180_TIME);
       unsigned long halfTime = crossingTimeMs / 2;
       Serial.print("[NAV] Half time travel: ");
       Serial.print(halfTime);
@@ -226,7 +226,7 @@ void navigateTargetFSM() {
     case STATE_TURN_90_SEARCH:
       Serial.println("[NAV STATE] TURN_90_SEARCH - Turning 90 degrees");
       delay(200);
-      turn90Left();
+      turn90Left(MOTOR_TURN_SPEED, TURN_90_TIME);
       currentState = STATE_SEARCH_CENTER;
       Serial.println("[NAV STATE] SEARCH_CENTER - Searching for center");
       break;
@@ -245,7 +245,7 @@ void navigateTargetFSM() {
         Serial.println("[NAV] Blue zone encountered during search");
         motorStop();
         delay(200);
-        turn180();
+        turn180(MOTOR_TURN_SPEED, TURN_180_TIME);
         motorMoveForward(MOTOR_SPEED);
         // Continue moving - should encounter black box
       }
@@ -274,7 +274,7 @@ void navigateTargetFSM() {
       if (isRedZoneDetected()) {
         Serial.println("[NAV] RED boundary detected - stopping");
         motorStop();
-        turn180();
+        turn180(MOTOR_TURN_SPEED, TURN_180_TIME);
         startTime = millis();
         currentState = STATE_GREEN_FOUND_FIRST_RED;
         Serial.println("[NAV STATE] GREEN_FOUND_FIRST_RED - Crossing green zone");
@@ -312,7 +312,7 @@ void navigateTargetFSM() {
     case STATE_GREEN_RETURN_HALF:
       Serial.println("[NAV STATE] GREEN_RETURN_HALF - Moving to center of green zone");
       delay(200);
-      turn180();
+      turn180(MOTOR_TURN_SPEED, TURN_180_TIME);
 
       unsigned long halfGreenTime = greenCrossingTimeMs / 2;
       Serial.print("[NAV] Half time travel in green: ");
@@ -337,7 +337,7 @@ void navigateTargetFSM() {
     case STATE_GREEN_TURN_90:
       Serial.println("[NAV STATE] GREEN_TURN_90 - Turning perpendicular in green zone");
       delay(200);
-      turn90Left();
+      turn90Left(MOTOR_TURN_SPEED, TURN_90_TIME);
       currentState = STATE_GREEN_SEARCH_CENTER;
       Serial.println("[NAV STATE] GREEN_SEARCH_CENTER - Searching perpendicular");
       break;
@@ -356,7 +356,7 @@ void navigateTargetFSM() {
         Serial.println("[NAV] RED boundary encountered during green search");
         motorStop();
         delay(200);
-        turn180();
+        turn180(MOTOR_TURN_SPEED, TURN_180_TIME);
         Serial.println("[NAV] Searching opposite direction");
         motorMoveForward(MOTOR_SPEED);
         // Continue searching in opposite direction
