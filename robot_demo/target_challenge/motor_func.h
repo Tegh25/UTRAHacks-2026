@@ -2,7 +2,20 @@
 #include <string.h>
 #include <stdio.h>
 
-// Function prototypes
+// ============ MOTOR PIN DEFINITIONS ============
+// Motor pin definitions (L298N H-Bridge)
+// Avoiding color sensor pins: 2, 7, 8, 9, 10
+#define MOTOR_L_IN1  3   // Left motor direction pin 1
+#define MOTOR_L_IN2  4   // Left motor direction pin 2
+#define MOTOR_L_PWM  5   // Left motor PWM (speed control)
+#define MOTOR_R_IN1  11  // Right motor direction pin 1
+#define MOTOR_R_IN2  12  // Right motor direction pin 2
+#define MOTOR_R_PWM  6   // Right motor PWM (speed control)
+
+// ============ FUNCTION PROTOTYPES ============
+
+// Motor initialization
+void motorSetup();
 
 // Motor control functions (scaffolding - to be implemented)
 void motorMoveForward(int speed);

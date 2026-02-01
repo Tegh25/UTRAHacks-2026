@@ -4,37 +4,40 @@
 
 #include <Arduino.h>
 #include "color_sensor_func.h"
+#include "navigate_target.h"
+#include "motor_func.h"
 
 void setup() {
-  // Color sensor setup is called from color_sensor_func.ino setup()
-  // Re-initialize here if needed or let color_sensor_func handle it
   Serial.begin(9600);
   delay(200);
-  
-  // Set pin modes
+
+  Serial.println("\n=== NAVIGATION TARGET CHALLENGE STARTED ===");
+
+  // Initialize color sensor
   pinMode(PIN_S0, OUTPUT);
   pinMode(PIN_S1, OUTPUT);
   pinMode(PIN_S2, OUTPUT);
   pinMode(PIN_S3, OUTPUT);
   pinMode(PIN_OUT, INPUT);
-  
+
   // Set frequency scaling to 20% (S0=HIGH, S1=LOW)
   digitalWrite(PIN_S0, HIGH);
   digitalWrite(PIN_S1, LOW);
-  
-  Serial.println("\n=== NAVIGATION TARGET CHALLENGE STARTED ===");
-  Serial.print("Black threshold: ");
+
+  Serial.print("Color sensor initialized. Black threshold: ");
   Serial.println(BLACK_THRESHOLD);
+
+  // Initialize motor system
+  motorSetup();
+
+  Serial.println("=== STARTING NAVIGATION ===\n");
+  delay(500);
 }
 
 void loop() {
-  // Read dominant color from sensor
-  const char* color = readDominantColor();
-  
-  // Use the color value for robot logic here
-  // Example:
-  // if (strcmp(color, "RED") == 0) { doSomething(); }
-  // else if (strcmp(color, "GREEN") == 0) { doSomethingElse(); }
-  
-  delay(200);
+  // Call navigation state machine every cycle
+  navigateTargetFSM();
+
+  // Small delay to prevent sensor overload
+  delay(50);
 }

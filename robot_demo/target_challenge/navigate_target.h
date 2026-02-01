@@ -20,27 +20,32 @@
 
 // State machine states
 enum NavigationState {
-  STATE_MOVE_RANDOM,       // Moving in starting direction
-  STATE_FOUND_FIRST_BLUE,  // Found first blue zone
-  STATE_STOPPED_AT_BLUE,   // Stopped when blue detected
-  STATE_RETURN_HALF_TIME,  // Returning half the distance
-  STATE_TURN_90_SEARCH,    // Turning 90 degrees to search
-  STATE_SEARCH_CENTER,     // Searching for center
-  STATE_GREEN_ZONE,        // In green zone, modify behavior
-  STATE_COMPLETE           // Navigation complete (black box found)
+  STATE_MOVE_RANDOM,           // Moving in starting direction
+  STATE_FOUND_FIRST_BLUE,      // Found first blue zone
+  STATE_STOPPED_AT_BLUE,       // Stopped when blue detected
+  STATE_RETURN_HALF_TIME,      // Returning half the distance
+  STATE_TURN_90_SEARCH,        // Turning 90 degrees to search
+  STATE_SEARCH_CENTER,         // Searching for center
+  STATE_GREEN_ZONE,            // Transition - entering green zone
+  STATE_GREEN_MOVE_RANDOM,     // Moving until RED boundary
+  STATE_GREEN_FOUND_FIRST_RED, // Found first RED, crossing
+  STATE_GREEN_RETURN_HALF,     // Returning to center of green
+  STATE_GREEN_TURN_90,         // Turning 90 in green zone
+  STATE_GREEN_SEARCH_CENTER,   // Searching for black in green
+  STATE_COMPLETE               // Navigation complete (black box found)
 };
 
 // ============ FUNCTION PROTOTYPES ============
 
 // Navigation main function
-void navigateTarget();
+void navigateTargetFSM();
 
 // Helper functions
-void setRandomDirection();
 char* getCurrentColor();
 bool isBlackBoxDetected();
 bool isBlueZoneDetected();
 bool isGreenZoneDetected();
+bool isRedZoneDetected();
 void waitForColorChange(const char* targetColor, unsigned long timeoutMs = 10000);
 unsigned long measureCrossingTime();
 
