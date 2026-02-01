@@ -16,12 +16,21 @@ An interactive 3D robot model viewer where you can *speak* to explore. Ask "show
 ## The Robot
 
 <div align="center">
-  <img src="showcase/robot-viewer/client/public/bot1.png" width="400" />
-  <img src="showcase/robot-viewer/client/public/bot2.png" width="400" />
-  <img src="showcase/robot-viewer/client/public/bot3.png" width="400" />
-  <img src="showcase/robot-viewer/client/public/bot4.png" width="400" />
-  <img src="showcase/robot-viewer/client/public/bot5.png" width="400" />
-  <img src="showcase/robot-viewer/client/public/bot6.png" width="400" />
+  <table>
+    <tr>
+      <td><img src="showcase/robot-viewer/client/public/bot1.png" width="300" /></td>
+      <td><img src="showcase/robot-viewer/client/public/bot2.png" width="300" /></td>
+      <td><img src="showcase/robot-viewer/client/public/bot3.png" width="300" /></td>
+    </tr>
+    <tr>
+      <td><img src="showcase/robot-viewer/client/public/bot4.png" width="300" /></td>
+      <td><img src="showcase/robot-viewer/client/public/bot5.png" width="300" /></td>
+      <td><img src="showcase/robot-viewer/client/public/bot6.png" width="300" /></td>
+    </tr>
+    <tr>
+      <td colspan="3" align="center"><img src="showcase/robot-viewer/client/public/real.jpeg" width="400" /></td>
+    </tr>
+  </table>
 </div>
 
 ---
