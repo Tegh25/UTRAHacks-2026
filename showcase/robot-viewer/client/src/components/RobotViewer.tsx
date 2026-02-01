@@ -24,6 +24,7 @@ function LoadedModel() {
   const selectPart = useRobotStore((s) => s.selectPart);
   const highlightParts = useRobotStore((s) => s.highlightParts);
   const explodeStrength = useRobotStore((s) => s.explodeStrength);
+  const setGroundY = useRobotStore((s) => s.setGroundY);
 
   // Auto-center and scale
   const { scaleFactor, offset } = useMemo(() => {
@@ -32,11 +33,13 @@ function LoadedModel() {
     const center = box.getCenter(new THREE.Vector3());
     const maxDim = Math.max(size.x, size.y, size.z);
     const s = 2 / maxDim;
+    const bottomY = box.min.y * s + (-center.y * s);
+    setGroundY(bottomY);
     return {
       scaleFactor: s,
       offset: new THREE.Vector3(-center.x * s, -center.y * s, -center.z * s),
     };
-  }, [scene]);
+  }, [scene, setGroundY]);
 
   // Compute the model-space center for explode directions
   const modelCenter = useMemo(() => {
@@ -161,6 +164,68 @@ function LoadedModel() {
   );
 }
 
+const LINE_COUNT = 30;
+const LINE_SPREAD = 10;
+const LINE_LENGTH = 0.4;
+const LINE_WIDTH = 0.1;
+const LINE_SPEED = 3;
+const MOVE_DIRECTION = 90; // degrees — 0 = +X, 90 = +Z, etc.
+
+// Pre-compute random positions outside the component to satisfy React purity rules
+const INITIAL_LINE_POSITIONS = Array.from({ length: LINE_COUNT }, () => ({
+  along: (Math.random() - 0.5) * LINE_SPREAD * 2,
+  across: (Math.random() - 0.5) * LINE_SPREAD,
+}));
+
+function MovingGroundLines({ groundY }: { groundY: number }) {
+  const groupRef = useRef<THREE.Group>(null);
+  const rad = (MOVE_DIRECTION * Math.PI) / 180;
+  const dirX = Math.cos(rad);
+  const dirZ = Math.sin(rad);
+  const perpX = -dirZ;
+  const perpZ = dirX;
+
+  useFrame((_, delta) => {
+    if (!groupRef.current) return;
+    const children = groupRef.current.children;
+    for (let i = 0; i < children.length; i++) {
+      const mesh = children[i];
+      // Move along the direction
+      mesh.position.x -= dirX * LINE_SPEED * delta;
+      mesh.position.z -= dirZ * LINE_SPEED * delta;
+
+      // Project position onto movement axis to check bounds
+      const proj = mesh.position.x * dirX + mesh.position.z * dirZ;
+      if (proj < -LINE_SPREAD) {
+        // Wrap to the other side
+        const newAlong = LINE_SPREAD + Math.random() * 2;
+        const newAcross = (Math.random() - 0.5) * LINE_SPREAD;
+        mesh.position.x = dirX * newAlong + perpX * newAcross;
+        mesh.position.z = dirZ * newAlong + perpZ * newAcross;
+      }
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      {INITIAL_LINE_POSITIONS.map((pos, i) => (
+        <mesh
+          key={i}
+          position={[
+            dirX * pos.along + perpX * pos.across,
+            groundY + 0.001,
+            dirZ * pos.along + perpZ * pos.across,
+          ]}
+          rotation={[-Math.PI / 2, 0, -rad]}
+        >
+          <planeGeometry args={[LINE_LENGTH, LINE_WIDTH]} />
+          <meshBasicMaterial color="#94a3b8" transparent opacity={0.6} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
 function LoadingFallback() {
   return (
     <mesh>
@@ -172,6 +237,8 @@ function LoadingFallback() {
 
 export default function RobotViewer() {
   const clearHighlights = useRobotStore((s) => s.clearHighlights);
+  const showGround = useRobotStore((s) => s.showGround);
+  const groundY = useRobotStore((s) => s.groundY);
   const controlsRef = useRef<OrbitControlsImpl>(null);
 
   return (
@@ -200,9 +267,19 @@ export default function RobotViewer() {
         <LoadedModel />
       </Suspense>
 
+      {showGround && (
+        <>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, groundY, 0]} receiveShadow>
+            <planeGeometry args={[20, 20]} />
+            <meshStandardMaterial color="#e2e8f0" />
+          </mesh>
+          <MovingGroundLines groundY={groundY} />
+        </>
+      )}
+
       <Grid
         args={[20, 20]}
-        position={[0, -0.15, 0]}
+        position={[0, groundY, 0]}
         cellSize={0.5}
         cellThickness={0.5}
         cellColor="#cbd5e1"
