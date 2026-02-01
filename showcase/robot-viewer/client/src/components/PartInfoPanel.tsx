@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRobotStore } from '../hooks/useRobotModel';
 import { getPartDetails } from '../services/api';
 import type { RobotPart, PartCategory } from '../types/robot';
@@ -19,6 +19,8 @@ export default function PartInfoPanel() {
   const tourActive = useRobotStore((s) => s.tourActive);
 
   const [detail, setDetail] = useState<{ part: RobotPart; relatedParts: RobotPart[] } | null>(null);
+  const [topOffset, setTopOffset] = useState(340);
+  const observerRef = useRef<ResizeObserver | null>(null);
 
   useEffect(() => {
     if (!selectedPart) {
@@ -30,11 +32,57 @@ export default function PartInfoPanel() {
       .catch(() => setDetail(null));
   }, [selectedPart]);
 
+  // Dynamically position below RightSidebar
+  useEffect(() => {
+    const updatePosition = () => {
+      const rightSidebar = document.querySelector('.right-sidebar-container');
+      if (rightSidebar) {
+        const rect = rightSidebar.getBoundingClientRect();
+        // Position 16px below the sidebar (matching the top-4 spacing)
+        const newTop = rect.bottom + 16;
+        setTopOffset(newTop);
+      }
+    };
+
+    // Update position immediately
+    updatePosition();
+
+    // Set up ResizeObserver on first mount only
+    if (!observerRef.current) {
+      const rightSidebar = document.querySelector('.right-sidebar-container');
+      if (rightSidebar) {
+        observerRef.current = new ResizeObserver(updatePosition);
+        observerRef.current.observe(rightSidebar);
+      }
+
+      // Also update on window resize
+      window.addEventListener('resize', updatePosition);
+    }
+
+    return () => {
+      // Don't disconnect observer here since we want it to persist
+    };
+  }, [selectedPart, highlightedParts]); // Re-run when panel visibility changes
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
+      window.removeEventListener('resize', () => {});
+    };
+  }, []);
+
   if (tourActive) return null;
   if (!selectedPart && highlightedParts.length === 0) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-20 w-72 bg-white/90 backdrop-blur-md rounded-xl border border-gray-200 shadow-2xl overflow-hidden">
+    <div
+      className="fixed right-4 z-20 w-64 bg-white/90 backdrop-blur-md rounded-xl border border-gray-200 shadow-2xl overflow-hidden transition-all duration-200"
+      style={{ top: `${topOffset}px` }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
         <h3 className="text-gray-800 text-sm font-semibold">Part Details</h3>

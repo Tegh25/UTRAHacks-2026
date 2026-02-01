@@ -4,14 +4,20 @@ import type { RobotPart } from '../types/index.js';
 import { getPartsListForAI, getAllPartIds, robotParts } from '../config/robotParts.js';
 
 let genAI: GoogleGenerativeAI | null = null;
+let currentApiKey: string | null = null;
 let warnedNoDescriptionKey = false;
 
 function getGenAI(): GoogleGenerativeAI | null {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return null;
-  if (!genAI) {
+
+  // Reinitialize if API key changed
+  if (!genAI || currentApiKey !== apiKey) {
     genAI = new GoogleGenerativeAI(apiKey);
+    currentApiKey = apiKey;
+    console.log('[Gemini] API client initialized/updated');
   }
+
   return genAI;
 }
 

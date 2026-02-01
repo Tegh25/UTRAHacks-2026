@@ -55,72 +55,55 @@ export default function VoiceControl() {
   };
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-3">
-      {apiStatus?.demoMode && (
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 text-xs px-3 py-1.5 rounded-lg backdrop-blur-sm">
-          Demo Mode — API keys not configured
-        </div>
-      )}
+    <div className="fixed bottom-4 right-4 z-20">
+      <form onSubmit={handleTextSubmit} className="bg-white/90 backdrop-blur-md rounded-xl border border-gray-200 shadow-2xl p-2 flex items-center gap-2">
+        {/* Text input */}
+        <input
+          type="text"
+          value={textQuery}
+          onChange={(e) => setTextQuery(e.target.value)}
+          placeholder="Ask about a part..."
+          disabled={isLoading}
+          className="bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-400 disabled:opacity-50 w-44"
+        />
 
-      {(error || micError) && (
-        <div className="bg-red-50 border border-red-200 text-red-600 text-xs px-3 py-1.5 rounded-lg backdrop-blur-sm max-w-xs text-center">
-          {error || micError}
-        </div>
-      )}
-
-      {lastTranscription && (
-        <div className="bg-white/80 backdrop-blur-sm text-gray-600 text-sm px-4 py-2 rounded-lg border border-gray-200 max-w-md text-center">
-          "{lastTranscription}"
-        </div>
-      )}
-
-      <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-gray-200 p-4 flex flex-col items-center gap-3 shadow-2xl">
         {/* Mic button */}
         <button
+          type="button"
           onClick={handleMicClick}
           disabled={isLoading || !isSupported}
-          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
+          className={`w-9 h-9 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
             isRecording
-              ? 'bg-red-500 animate-pulse shadow-lg shadow-red-500/40'
+              ? 'bg-red-500 animate-pulse shadow-md shadow-red-500/40'
               : isLoading
               ? 'bg-gray-300 cursor-wait'
-              : 'bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/30'
+              : 'bg-gray-200 hover:bg-gray-300'
           } disabled:opacity-40 disabled:cursor-not-allowed`}
         >
           {isLoading ? (
-            <svg className="w-6 h-6 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-gray-600 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
           ) : (
-            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg className={`w-4 h-4 ${isRecording ? 'text-white' : 'text-gray-600'}`} fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
               <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
             </svg>
           )}
         </button>
 
-        <div className="text-gray-400 text-xs">or type</div>
-
-        {/* Text input */}
-        <form onSubmit={handleTextSubmit} className="flex gap-2">
-          <input
-            type="text"
-            value={textQuery}
-            onChange={(e) => setTextQuery(e.target.value)}
-            placeholder="Ask about a robot part..."
-            disabled={isLoading}
-            className="bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-400 w-56 disabled:opacity-50"
-          />
-          <button
-            type="submit"
-            disabled={isLoading || !textQuery.trim()}
-            className="bg-blue-600 hover:bg-blue-500 text-white text-sm px-3 py-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Go
-          </button>
-        </form>
-      </div>
+        {/* Submit button */}
+        <button
+          type="submit"
+          disabled={isLoading || !textQuery.trim()}
+          className="w-9 h-9 rounded-full flex items-center justify-center bg-blue-600 hover:bg-blue-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+        >
+          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        </button>
+      </form>
     </div>
   );
 }

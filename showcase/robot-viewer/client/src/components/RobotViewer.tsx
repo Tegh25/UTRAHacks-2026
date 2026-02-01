@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Environment, Grid, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useRobotStore } from '../hooks/useRobotModel';
+import { useUISounds } from '../hooks/useUISounds';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 const MODEL_PATH = '/models/utra_robot.gltf';
@@ -51,13 +52,17 @@ function LoadedModel() {
   const groupRef = useRef<THREE.Group>(null);
 
   const highlightedParts = useRobotStore((s) => s.highlightedParts);
+  const selectedPart = useRobotStore((s) => s.selectedPart);
   const selectPart = useRobotStore((s) => s.selectPart);
   const highlightParts = useRobotStore((s) => s.highlightParts);
   const explodeStrength = useRobotStore((s) => s.explodeStrength);
   const showGround = useRobotStore((s) => s.showGround);
   const setGroundY = useRobotStore((s) => s.setGroundY);
   const cameraMode = useRobotStore((s) => s.cameraMode);
+  const setCarSpeed = useRobotStore((s) => s.setCarSpeed);
+  const setIsCarMoving = useRobotStore((s) => s.setIsCarMoving);
   const { camera, controls } = useThree();
+  const { playSound } = useUISounds();
 
   const speedRef = useRef(0);
   const headingRef = useRef(0);
@@ -395,6 +400,8 @@ function LoadedModel() {
     }
 
     speedRef.current = speed;
+    setCarSpeed(speed);
+    setIsCarMoving(Math.abs(speed) > 0.1);
     if (groupRef.current) {
       carPoseRef.position.copy(groupRef.current.position);
       carPoseRef.heading = headingRef.current;
@@ -523,7 +530,7 @@ function LoadedModel() {
       // --- Wheel spin: rotate wheel meshes based on speed ---
       const basePartId = partId.replace(/_\d+$/, '');
       if (WHEEL_PART_IDS.includes(basePartId)) {
-        const direction = basePartId === 'wheel-2' ? 1 : -1;
+        const direction = basePartId === 'wheel-2' ? -1 : 1;
         const spin = speed * WHEEL_SPIN_FACTOR * delta * spinDirection;
         // eslint-disable-next-line react-hooks/immutability -- imperative Three.js mutation in useFrame
         mesh.rotation.z += spin * direction;
@@ -589,6 +596,42 @@ function LoadedModel() {
     }
   });
 
+  // Track previous explode strength for sound effects
+  const prevExplodeStrengthRef = useRef(explodeStrength);
+  const prevSelectedPartRef = useRef(selectedPart);
+
+  // Play sound when explode strength changes significantly
+  useEffect(() => {
+    const prev = prevExplodeStrengthRef.current;
+    const diff = Math.abs(explodeStrength - prev);
+
+    // Only play sound if change is significant (more than 5 units)
+    if (diff > 5) {
+      if (explodeStrength < prev) {
+        // Parts coming together (assembling)
+        playSound('attach-part', 0.7);
+      } else {
+        // Parts moving apart (disassembling)
+        playSound('detach-part', 0.7);
+      }
+    }
+
+    prevExplodeStrengthRef.current = explodeStrength;
+  }, [explodeStrength, playSound]);
+
+  // Play sound when part is unselected and parts come back together
+  useEffect(() => {
+    const prevSelected = prevSelectedPartRef.current;
+    const currentSelected = selectedPart;
+
+    // If we had a selection and now we don't (unselected)
+    if (prevSelected !== null && currentSelected === null) {
+      playSound('attach-part', 0.8);
+    }
+
+    prevSelectedPartRef.current = currentSelected;
+  }, [selectedPart, playSound]);
+
   // Click handler — use the clicked mesh's partId directly
   const handleClick = (e: { object: THREE.Object3D; stopPropagation: () => void }) => {
     e.stopPropagation();
@@ -599,6 +642,10 @@ function LoadedModel() {
       const basePartId = partId.replace(/_\d+$/, '');
       console.log('[Click] Base partId:', basePartId);
       console.log('[Click] Setting highlightedParts and selectedPart to:', basePartId);
+
+      // Play selection sound
+      playSound('select-part');
+
       // Always set both highlighted and selected to ensure sync
       highlightParts([basePartId]);
       selectPart(basePartId);

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { ProcessedVoiceResponse, RobotPart, ApiStatus } from '../types/robot';
+import type { ProcessedVoiceResponse, RobotPart, ApiStatus, EngineSound } from '../types/robot';
 
 const baseURL = import.meta.env.VITE_API_URL ?? '/api';
 const client = axios.create({ baseURL });
@@ -35,5 +35,17 @@ export async function searchParts(query: string): Promise<RobotPart[]> {
 
 export async function getApiStatus(): Promise<ApiStatus> {
   const { data } = await client.get('/voice/status');
+  return data;
+}
+
+export async function getAvailableSounds(): Promise<EngineSound[]> {
+  const { data } = await client.get('/sounds');
+  return data.sounds;
+}
+
+export async function generateSound(soundId: string, duration: number = 2): Promise<Blob> {
+  const { data } = await client.post(`/sounds/generate/${soundId}`, { duration }, {
+    responseType: 'blob',
+  });
   return data;
 }

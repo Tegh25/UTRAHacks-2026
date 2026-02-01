@@ -6,6 +6,7 @@ import express from 'express';
 import cors from 'cors';
 import voiceRoutes from './routes/voice.js';
 import partsRoutes from './routes/parts.js';
+import soundsRoutes from './routes/sounds.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -23,6 +24,7 @@ app.use(express.json());
 
 app.use('/api/voice', voiceRoutes);
 app.use('/api/parts', partsRoutes);
+app.use('/api/sounds', soundsRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString(), demoMode });

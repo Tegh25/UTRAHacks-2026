@@ -21,7 +21,7 @@ export interface ApiStatus {
   geminiConfigured: boolean;
 }
 
-export interface RobotState {
+export interface RobotState extends SoundState {
   highlightedParts: string[];
   selectedPart: string | null;
   isLoading: boolean;
@@ -36,7 +36,34 @@ export interface RobotState {
   tourActive: boolean;
 }
 
-export interface RobotActions {
+export interface EngineSound {
+  id: string;
+  name: string;
+  description: string;
+  audioUrl?: string;
+}
+
+export interface SoundState {
+  soundEnabled: boolean;
+  soundVolume: number;
+  selectedSound: EngineSound | null;
+  availableSounds: EngineSound[];
+  isLoadingSound: boolean;
+  carSpeed: number;
+  isCarMoving: boolean;
+}
+
+export interface SoundActions {
+  setSoundEnabled: (enabled: boolean) => void;
+  setSoundVolume: (volume: number) => void;
+  setSelectedSound: (sound: EngineSound | null) => void;
+  setAvailableSounds: (sounds: EngineSound[]) => void;
+  setIsLoadingSound: (loading: boolean) => void;
+  setCarSpeed: (speed: number) => void;
+  setIsCarMoving: (moving: boolean) => void;
+}
+
+export interface RobotActions extends SoundActions {
   highlightParts: (partIds: string[]) => void;
   clearHighlights: () => void;
   selectPart: (partId: string | null) => void;
