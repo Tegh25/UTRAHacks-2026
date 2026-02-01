@@ -3,10 +3,11 @@ import { generatePartDescription } from './gemini.js';
 
 const generatedDescriptions = new Map<string, string>();
 const inFlight = new Map<string, Promise<string | null>>();
+let quotaExceeded = false;
 
 const PLACEHOLDER_PREFIX = 'UTRA Robot part:';
 const PLACEHOLDER_EXACT = new Set(['Unknown part', 'Unknown part.']);
-const MAX_CONCURRENCY = 3;
+const MAX_CONCURRENCY = 1;
 
 function isPlaceholderDescription(part: RobotPart): boolean {
   const desc = part.description?.trim() ?? '';
@@ -17,6 +18,8 @@ function isPlaceholderDescription(part: RobotPart): boolean {
 }
 
 async function getGeneratedDescription(part: RobotPart): Promise<string | null> {
+  if (quotaExceeded) return null;
+
   const cached = generatedDescriptions.get(part.id);
   if (cached) return cached;
 
@@ -32,9 +35,15 @@ async function getGeneratedDescription(part: RobotPart): Promise<string | null> 
       }
       return null;
     })
-    .catch((error) => {
+    .catch((error: unknown) => {
       inFlight.delete(part.id);
-      console.error('[Gemini] Description generation failed:', error);
+      const status = (error as { status?: number })?.status;
+      if (status === 429) {
+        quotaExceeded = true;
+        console.warn('[Gemini] Quota exceeded (429), skipping AI descriptions for remaining parts');
+      } else {
+        console.error('[Gemini] Description generation failed:', error);
+      }
       return null;
     });
 

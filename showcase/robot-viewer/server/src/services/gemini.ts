@@ -62,20 +62,29 @@ Rules:
 - confidence is 0.0 to 1.0
 - If no parts match, return empty partIds with low confidence`;
 
-  const result = await model.generateContent(prompt);
-  const text = result.response.text().trim();
+  try {
+    const result = await model.generateContent(prompt);
+    const text = result.response.text().trim();
 
-  // Extract JSON from possible markdown fencing
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error('Failed to parse Gemini response as JSON');
+    // Extract JSON from possible markdown fencing
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('Failed to parse Gemini response as JSON');
+    }
+
+    const parsed: GeminiResponse = JSON.parse(jsonMatch[0]);
+    const validIds = getAllPartIds();
+    parsed.partIds = parsed.partIds.filter((id) => validIds.includes(id));
+
+    return parsed;
+  } catch (err: unknown) {
+    const status = (err as { status?: number })?.status;
+    if (status === 429) {
+      console.warn('[Gemini] Quota exceeded (429), using mock matching for query');
+      return mockIdentifyParts(query);
+    }
+    throw err;
   }
-
-  const parsed: GeminiResponse = JSON.parse(jsonMatch[0]);
-  const validIds = getAllPartIds();
-  parsed.partIds = parsed.partIds.filter((id) => validIds.includes(id));
-
-  return parsed;
 }
 
 function truncateAtWord(text: string, maxLength: number): string {
@@ -123,10 +132,16 @@ Part info:
 
 Return ONLY the description text.`;
 
-  const result = await model.generateContent(prompt);
-  const text = result.response.text().trim();
-  const cleaned = sanitizeDescription(text);
-  return cleaned || null;
+  try {
+    const result = await model.generateContent(prompt);
+    const text = result.response.text().trim();
+    const cleaned = sanitizeDescription(text);
+    return cleaned || null;
+  } catch (err: unknown) {
+    const status = (err as { status?: number })?.status;
+    if (status === 429) throw err; // Let partDescriptions treat 429 as quota exceeded
+    return null;
+  }
 }
 
 export function mockIdentifyParts(query: string): GeminiResponse {
