@@ -219,42 +219,6 @@ Host the client on Vercel/Netlify/Cloudflare Pages and the API on Railway/Render
 
 **Order:** Deploy Railway first so you have the API URL, then set `VITE_API_URL` on Vercel to that URL and deploy. If you deploy Vercel first, add `VITE_API_URL` after Railway is live and trigger a redeploy.
 
-**API works on `/health` but frontend still gets 404?** The frontend is calling your Vercel URL (e.g. `https://your-app.vercel.app/api/...`) instead of Railway. Set **`VITE_API_URL`** in Vercel to your Railway URL **including `/api`**, e.g. `https://your-backend.up.railway.app/api`, then **redeploy** the Vercel project so the client is rebuilt with that value. (Vite bakes env vars in at build time.)
-
-### Railway not starting? (what to check / paste)
-
-The server already uses `process.env.PORT`, binds to `0.0.0.0`, and has a build step. If Railway still fails:
-
-1. **Health check** (replace with your Railway URL):
-   ```bash
-   curl -i https://your-backend.up.railway.app/health
-   ```
-   You should get `200` and `{"status":"ok",...}`. Also try `/api/health`.
-
-2. **Local run** (from `server/`):
-   ```bash
-   npm install
-   npm run build
-   PORT=3000 npm start
-   ```
-   On Windows PowerShell: `$env:PORT=3000; npm start`
-
-3. **What to paste** if you need help:
-   - Last 20–50 lines of Railway **Deploy** or **Build** logs.
-   - Your `server/package.json` **scripts** section.
-   - The exact error from Railway logs or browser DevTools (Console / Network).
-
-**Quick checks in this repo:** `PORT` is read from env (default `3001`), `"start": "node dist/index.js"`, build runs `tsc` (via `prestart` or Railway build command). Required env vars have defaults (demo mode); set `CLIENT_URL` for CORS when using Vercel.
-
-### Getting 404?
-
-- **404 on the main page (blank or “Client not built”)** — The server has no `server/public` folder. Run the full build so the client is copied: from `robot-viewer/`, run `cd server && npm run build:full`, then start the server.
-- **404 on API calls** (e.g. parts or voice) — You’re using split hosting: the frontend is on a different domain and is requesting `/api` on its own domain (which has no API). Set **`VITE_API_URL`** in the frontend build env to your backend URL including `/api`, e.g. `https://your-backend.railway.app/api`. Rebuild and redeploy the client.
-
-### CORS / "Access-Control-Allow-Origin" blocked?
-
-The API allows (1) origins in **`CLIENT_URL`** (comma-separated on Railway) and (2) **any origin ending with `.vercel.app`**. Set **`CLIENT_URL`** on Railway to your main Vercel URL (e.g. `https://utra-frontend.vercel.app`), then **redeploy the Railway service**. After that, production and preview Vercel URLs should work.
-
 ## Tech Stack
 
 - React + Vite + TypeScript
