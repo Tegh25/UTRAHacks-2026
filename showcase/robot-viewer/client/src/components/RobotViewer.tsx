@@ -5,11 +5,15 @@ import * as THREE from 'three';
 import { useRobotStore } from '../hooks/useRobotModel';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
-const MODEL_PATH = '/models/Buggy.gltf';
+const MODEL_PATH = '/models/utra_robot.gltf';
 
 const HIGHLIGHT_COLOR = new THREE.Color('#c026d3');
 const GREY_COLOR = new THREE.Color('#aaaaaa');
 const LERP_SPEED = 0.5;
+
+// Add wheel mesh IDs here — click a wheel in the viewer to find its partId
+const WHEEL_PART_IDS: string[] = ["wheel-1", "wheel-2"];
+const WHEEL_SPIN_SPEED = 5; // radians per second
 // Deterministic fallback direction for meshes at the exact center
 function deterministicDir(index: number): THREE.Vector3 {
   const angle = (index + 1) * 2.399963; // golden angle
@@ -24,6 +28,8 @@ function LoadedModel() {
   const selectPart = useRobotStore((s) => s.selectPart);
   const highlightParts = useRobotStore((s) => s.highlightParts);
   const explodeStrength = useRobotStore((s) => s.explodeStrength);
+  const showGround = useRobotStore((s) => s.showGround);
+  const setGroundY = useRobotStore((s) => s.setGroundY);
 
   // Auto-center and scale
   const { scaleFactor, offset } = useMemo(() => {
@@ -32,11 +38,13 @@ function LoadedModel() {
     const center = box.getCenter(new THREE.Vector3());
     const maxDim = Math.max(size.x, size.y, size.z);
     const s = 2 / maxDim;
+    const bottomY = box.min.y * s + (-center.y * s);
+    setGroundY(bottomY);
     return {
       scaleFactor: s,
       offset: new THREE.Vector3(-center.x * s, -center.y * s, -center.z * s),
     };
-  }, [scene]);
+  }, [scene, setGroundY]);
 
   // Compute the model-space center for explode directions
   const modelCenter = useMemo(() => {
@@ -54,11 +62,19 @@ function LoadedModel() {
       explodeDir: THREE.Vector3;
       currentOffset: THREE.Vector3;
     }[] = [];
+    const partIdCounts = new Map<string, number>();
+
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
-        const partId = mesh.name || mesh.parent?.name;
-        if (!partId) return;
+        const baseName = mesh.name || mesh.parent?.name;
+        if (!baseName) return;
+
+        // Make partId unique by adding index if there are multiple meshes with same name
+        const count = partIdCounts.get(baseName) || 0;
+        partIdCounts.set(baseName, count + 1);
+        const partId = count > 0 ? `${baseName}_${count}` : baseName;
+
         const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 
         // Compute world-space center of this mesh for the explode direction
@@ -87,8 +103,8 @@ function LoadedModel() {
     return entries;
   }, [scene, modelCenter]);
 
-  // Each frame: highlight selected part, grey out others, animate explode
-  useFrame(() => {
+  // Each frame: highlight selected part, grey out others, animate explode, spin wheels
+  useFrame((_, delta) => {
     const hasHighlight = highlightedParts.length > 0;
     const pulse = 0.6 + Math.sin(Date.now() * 0.004) * 0.2;
 
@@ -103,23 +119,26 @@ function LoadedModel() {
         const orig = originals[i] as THREE.MeshStandardMaterial;
 
         if (isHighlighted) {
+          std.color.copy(HIGHLIGHT_COLOR);
           std.emissive.copy(HIGHLIGHT_COLOR);
-          std.emissiveIntensity = pulse;
-          std.color.copy(orig.color);
+          std.emissiveIntensity = pulse * 3;
+          std.map = null; // Remove texture to show color
           std.opacity = 1;
           std.transparent = false;
           std.depthWrite = true;
         } else if (hasHighlight) {
+          std.color.copy(GREY_COLOR);
           std.emissive.set('#000000');
           std.emissiveIntensity = 0;
-          std.color.copy(GREY_COLOR);
+          std.map = orig.map; // Restore texture
           std.opacity = 0.4;
           std.transparent = true;
           std.depthWrite = false;
         } else {
+          std.color.copy(orig.color);
           std.emissive.copy(orig.emissive);
           std.emissiveIntensity = orig.emissiveIntensity;
-          std.color.copy(orig.color);
+          std.map = orig.map;
           std.opacity = orig.opacity;
           std.transparent = orig.transparent;
           std.depthWrite = true;
@@ -134,6 +153,13 @@ function LoadedModel() {
 
       currentOffset.lerp(targetOffset, LERP_SPEED);
       mesh.position.copy(origPos).add(currentOffset);
+
+      // --- Wheel spin: rotate wheel meshes when ground animation is active ---
+      if (showGround && WHEEL_PART_IDS.includes(partId)) {
+        const direction = partId === 'wheel-2' ? 1 : -1;
+        // eslint-disable-next-line react-hooks/immutability -- imperative Three.js mutation in useFrame
+        mesh.rotation.z += WHEEL_SPIN_SPEED * delta * direction;
+      }
     }
   });
 
@@ -161,6 +187,68 @@ function LoadedModel() {
   );
 }
 
+const LINE_COUNT = 30;
+const LINE_SPREAD = 10;
+const LINE_LENGTH = 2;
+const LINE_WIDTH = 0.1;
+const LINE_SPEED = 10;
+const MOVE_DIRECTION = 0; // degrees — 0 = +X, 90 = +Z, etc.
+
+// Pre-compute random positions outside the component to satisfy React purity rules
+const INITIAL_LINE_POSITIONS = Array.from({ length: LINE_COUNT }, () => ({
+  along: (Math.random() - 0.5) * LINE_SPREAD * 2,
+  across: (Math.random() - 0.5) * LINE_SPREAD,
+}));
+
+function MovingGroundLines({ groundY }: { groundY: number }) {
+  const groupRef = useRef<THREE.Group>(null);
+  const rad = (MOVE_DIRECTION * Math.PI) / 180;
+  const dirX = Math.cos(rad);
+  const dirZ = Math.sin(rad);
+  const perpX = -dirZ;
+  const perpZ = dirX;
+
+  useFrame((_, delta) => {
+    if (!groupRef.current) return;
+    const children = groupRef.current.children;
+    for (let i = 0; i < children.length; i++) {
+      const mesh = children[i];
+      // Move along the direction
+      mesh.position.x -= dirX * LINE_SPEED * delta;
+      mesh.position.z -= dirZ * LINE_SPEED * delta;
+
+      // Project position onto movement axis to check bounds
+      const proj = mesh.position.x * dirX + mesh.position.z * dirZ;
+      if (proj < -LINE_SPREAD) {
+        // Wrap to the other side
+        const newAlong = LINE_SPREAD + Math.random() * 2;
+        const newAcross = (Math.random() - 0.5) * LINE_SPREAD;
+        mesh.position.x = dirX * newAlong + perpX * newAcross;
+        mesh.position.z = dirZ * newAlong + perpZ * newAcross;
+      }
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      {INITIAL_LINE_POSITIONS.map((pos, i) => (
+        <mesh
+          key={i}
+          position={[
+            dirX * pos.along + perpX * pos.across,
+            groundY + 0.001,
+            dirZ * pos.along + perpZ * pos.across,
+          ]}
+          rotation={[-Math.PI / 2, 0, -rad]}
+        >
+          <planeGeometry args={[LINE_LENGTH, LINE_WIDTH]} />
+          <meshBasicMaterial color="#94a3b8" transparent opacity={0.6} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
 function LoadingFallback() {
   return (
     <mesh>
@@ -172,6 +260,8 @@ function LoadingFallback() {
 
 export default function RobotViewer() {
   const clearHighlights = useRobotStore((s) => s.clearHighlights);
+  const showGround = useRobotStore((s) => s.showGround);
+  const groundY = useRobotStore((s) => s.groundY);
   const controlsRef = useRef<OrbitControlsImpl>(null);
 
   return (
@@ -200,9 +290,19 @@ export default function RobotViewer() {
         <LoadedModel />
       </Suspense>
 
+      {showGround && (
+        <>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, groundY, 0]} receiveShadow>
+            <planeGeometry args={[20, 20]} />
+            <meshStandardMaterial color="#e2e8f0" />
+          </mesh>
+          <MovingGroundLines groundY={groundY} />
+        </>
+      )}
+
       <Grid
         args={[20, 20]}
-        position={[0, -0.15, 0]}
+        position={[0, groundY, 0]}
         cellSize={0.5}
         cellThickness={0.5}
         cellColor="#cbd5e1"

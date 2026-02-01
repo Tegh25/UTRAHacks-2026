@@ -30,6 +30,8 @@ export interface RobotState {
   parts: RobotPart[];
   apiStatus: ApiStatus | null;
   explodeStrength: number;
+  showGround: boolean;
+  groundY: number;
 }
 
 export interface RobotActions {
@@ -42,4 +44,6 @@ export interface RobotActions {
   setParts: (parts: RobotPart[]) => void;
   setApiStatus: (status: ApiStatus) => void;
   setExplodeStrength: (strength: number) => void;
+  toggleGround: () => void;
+  setGroundY: (y: number) => void;
 }

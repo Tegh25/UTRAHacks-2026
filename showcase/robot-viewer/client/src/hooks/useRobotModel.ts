@@ -9,7 +9,9 @@ export const useRobotStore = create<RobotState & RobotActions>((set) => ({
   error: null,
   parts: [],
   apiStatus: null,
-  explodeStrength: 100,
+  explodeStrength: 0.1,
+  showGround: false,
+  groundY: -0.15,
 
   highlightParts: (partIds: string[]) => set({ highlightedParts: partIds, error: null }),
   clearHighlights: () => set({ highlightedParts: [], selectedPart: null }),
@@ -20,4 +22,6 @@ export const useRobotStore = create<RobotState & RobotActions>((set) => ({
   setParts: (parts: RobotPart[]) => set({ parts }),
   setApiStatus: (status: ApiStatus) => set({ apiStatus: status }),
   setExplodeStrength: (strength: number) => set({ explodeStrength: strength }),
+  toggleGround: () => set((state) => ({ showGround: !state.showGround })),
+  setGroundY: (y: number) => set({ groundY: y }),
 }));

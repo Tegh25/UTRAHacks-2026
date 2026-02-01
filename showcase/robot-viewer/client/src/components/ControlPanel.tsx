@@ -36,6 +36,8 @@ export default function ControlPanel() {
   const clearHighlights = useRobotStore((s) => s.clearHighlights);
   const explodeStrength = useRobotStore((s) => s.explodeStrength);
   const setExplodeStrength = useRobotStore((s) => s.setExplodeStrength);
+  const showGround = useRobotStore((s) => s.showGround);
+  const toggleGround = useRobotStore((s) => s.toggleGround);
 
   useEffect(() => {
     getAllParts().then(setParts).catch(console.error);
@@ -86,6 +88,23 @@ export default function ControlPanel() {
               onChange={(e) => setExplodeStrength(Number(e.target.value))}
               className="w-full h-1 accent-blue-600 cursor-pointer"
             />
+          </div>
+
+          {/* Ground toggle */}
+          <div className="px-3 py-2 border-b border-gray-200 flex items-center justify-between">
+            <label className="text-[10px] text-gray-500 uppercase tracking-wide">Ground</label>
+            <button
+              onClick={toggleGround}
+              className={`relative w-8 h-4 rounded-full transition-colors ${
+                showGround ? 'bg-blue-600' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${
+                  showGround ? 'translate-x-4' : ''
+                }`}
+              />
+            </button>
           </div>
 
           {/* Category filters */}
