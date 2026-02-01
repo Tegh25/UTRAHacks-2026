@@ -10,7 +10,7 @@ export default function VoiceControl() {
 
   const isLoading = useRobotStore((s) => s.isLoading);
   const lastTranscription = useRobotStore((s) => s.lastTranscription);
-  const error = useRobotStore((s) => s.error);
+  const storeError = useRobotStore((s) => s.error);
   const apiStatus = useRobotStore((s) => s.apiStatus);
   const highlightParts = useRobotStore((s) => s.highlightParts);
   const setLoading = useRobotStore((s) => s.setLoading);
@@ -55,7 +55,22 @@ export default function VoiceControl() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-20">
+    <div className="fixed bottom-4 right-4 z-20 flex flex-col items-end gap-2">
+      {apiStatus?.demoMode && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 text-xs px-3 py-1.5 rounded-lg backdrop-blur-sm">
+          Demo Mode — API keys not configured
+        </div>
+      )}
+      {(storeError ?? micError) && (
+        <div className="bg-red-50 border border-red-200 text-red-600 text-xs px-3 py-1.5 rounded-lg backdrop-blur-sm max-w-xs text-center">
+          {storeError ?? micError}
+        </div>
+      )}
+      {lastTranscription && (
+        <div className="bg-white/80 backdrop-blur-sm text-gray-600 text-sm px-3 py-2 rounded-lg border border-gray-200 max-w-xs text-center">
+          &quot;{lastTranscription}&quot;
+        </div>
+      )}
       <form onSubmit={handleTextSubmit} className="bg-white/90 backdrop-blur-md rounded-xl border border-gray-200 shadow-2xl p-2 flex items-center gap-2">
         {/* Text input */}
         <input
