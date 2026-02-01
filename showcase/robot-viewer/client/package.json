@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "generate-drift": "bash scripts/generate-drift-sound.sh",
-    "generate-sound": "node scripts/generate-sound.js"
+    "generate-sound": "node scripts/generate-sound.js",
+    "generate-component-sounds": "node scripts/generateComponentSounds.js"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

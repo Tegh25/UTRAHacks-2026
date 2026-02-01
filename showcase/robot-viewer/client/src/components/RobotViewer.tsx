@@ -63,7 +63,7 @@ function LoadedModel() {
   const setCarSpeed = useRobotStore((s) => s.setCarSpeed);
   const setIsCarMoving = useRobotStore((s) => s.setIsCarMoving);
   const { camera, controls } = useThree();
-  const { playSound } = useUISounds();
+  const { playSound, playComponentSound } = useUISounds();
 
   const driftSoundRef = useRef<HTMLAudioElement | null>(null);
   const isDriftingRef = useRef(false);
@@ -724,8 +724,8 @@ function LoadedModel() {
       console.log('[Click] Base partId:', basePartId);
       console.log('[Click] Setting highlightedParts and selectedPart to:', basePartId);
 
-      // Play selection sound
-      playSound('select-part');
+      // Play component-specific sound
+      playComponentSound(basePartId);
 
       // Always set both highlighted and selected to ensure sync
       highlightParts([basePartId]);
