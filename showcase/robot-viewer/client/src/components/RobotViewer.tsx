@@ -7,7 +7,7 @@ import { useRobotStore } from '../hooks/useRobotModel';
 import { useUISounds } from '../hooks/useUISounds';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
-const MODEL_PATH = '/models/utra_robot.gltf';
+const MODEL_PATH = '/models/utra_robot(v3).gltf';
 
 const HIGHLIGHT_COLOR = new THREE.Color('#c026d3');
 const LERP_SPEED = 0.5;
@@ -16,7 +16,7 @@ const MOVE_DAMPING = 5;
 const MAX_SPEED = 4.2;
 const MAX_REVERSE = 2.6;
 const TURN_RATE = 2.6;
-const BOOST_MULT = 1.6;
+const BOOST_MULT = 3;
 const WHEEL_SPIN_FACTOR = 8;
 const SMOKE_MAX = 160;
 const SMOKE_SPAWN_RATE = 22;
@@ -25,7 +25,7 @@ const SMOKE_DRIFT = 0.25;
 const SMOKE_DECAY = 1.2;
 const UP_AXIS = new THREE.Vector3(0, 1, 0);
 const GRASS_SIZE = 300;
-const GRASS_REPEAT = 100;
+const GRASS_REPEAT = 2; // Minimal repetition for large roads
 const GRASS_BLADE_COUNT = 2200;
 const GRASS_BLADE_HEIGHT = 0.25;
 const GRASS_BLADE_WIDTH = 0.04;
@@ -76,6 +76,7 @@ function LoadedModel() {
     left: false,
     right: false,
     boost: false,
+    brake: false,
   });
   const smokeDataRef = useRef<{
     positions: Float32Array;
@@ -115,7 +116,7 @@ function LoadedModel() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
-        ['w', 'W', 'a', 'A', 's', 'S', 'd', 'D', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Shift'].includes(
+        ['w', 'W', 'a', 'A', 's', 'S', 'd', 'D', 'b', 'B', 'Shift', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(
           event.key
         )
       ) {
@@ -142,8 +143,12 @@ function LoadedModel() {
         case 'ArrowRight':
           keysRef.current.right = true;
           break;
-        case 'Shift':
+        case 'b':
+        case 'B':
           keysRef.current.boost = true;
+          break;
+        case 'Shift':
+          keysRef.current.brake = true;
           break;
         default:
           break;
@@ -152,7 +157,7 @@ function LoadedModel() {
 
     const handleKeyUp = (event: KeyboardEvent) => {
       if (
-        ['w', 'W', 'a', 'A', 's', 'S', 'd', 'D', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Shift'].includes(
+        ['w', 'W', 'a', 'A', 's', 'S', 'd', 'D', 'b', 'B', 'Shift', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(
           event.key
         )
       ) {
@@ -179,8 +184,12 @@ function LoadedModel() {
         case 'ArrowRight':
           keysRef.current.right = false;
           break;
-        case 'Shift':
+        case 'b':
+        case 'B':
           keysRef.current.boost = false;
+          break;
+        case 'Shift':
+          keysRef.current.brake = false;
           break;
         default:
           break;
@@ -193,6 +202,7 @@ function LoadedModel() {
       keysRef.current.left = false;
       keysRef.current.right = false;
       keysRef.current.boost = false;
+      keysRef.current.brake = false;
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -356,11 +366,21 @@ function LoadedModel() {
     if (showGround && groupRef.current) {
       const throttle = (keysRef.current.forward ? 1 : 0) - (keysRef.current.back ? 1 : 0);
       const steer = (keysRef.current.left ? 1 : 0) - (keysRef.current.right ? 1 : 0);
+      const brake = keysRef.current.brake;
       const boost = keysRef.current.boost && throttle > 0;
       const maxForward = boost ? MAX_SPEED * BOOST_MULT : MAX_SPEED;
       const accelScale = boost ? BOOST_MULT : 1;
 
-      if (throttle !== 0) {
+      // Brake physics: apply strong deceleration when braking
+      if (brake && Math.abs(speed) > 0.1) {
+        const brakePower = 2; // Strong braking
+        const brakeDecel = Math.sign(speed) * brakePower * delta;
+        speed -= brakeDecel;
+        // Stop completely if speed is very low
+        if (Math.abs(speed) < 0.3) {
+          speed *= 0.85;
+        }
+      } else if (throttle !== 0) {
         const accel = throttle > 0 ? MOVE_ACCEL * accelScale : MOVE_ACCEL * 1.4;
         speed += throttle * accel * delta;
       } else {
@@ -371,10 +391,19 @@ function LoadedModel() {
       if (speed > maxForward) speed = maxForward;
       if (speed < -MAX_REVERSE) speed = -MAX_REVERSE;
 
+      // Drift mechanics: enhanced turning when braking + turning + moving forward
+      const isDrifting = brake && steer !== 0 && speed > 1;
       const speedFactor = Math.min(Math.abs(speed) / maxForward, 1);
+
       if (steer !== 0) {
         const steerDir = speed !== 0 ? Math.sign(speed) : Math.sign(throttle || 1);
-        const steerStrength = Math.max(speedFactor, throttle !== 0 ? 0.15 : 0);
+        let steerStrength = Math.max(speedFactor, throttle !== 0 ? 0.15 : 0);
+
+        // Increase turn rate during drift
+        if (isDrifting) {
+          steerStrength *= 1.8; // Boost turning during drift
+        }
+
         if (steerStrength > 0) {
           headingRef.current += steer * TURN_RATE * steerStrength * steerDir * delta;
         }
@@ -783,28 +812,117 @@ function FocusOnSelection() {
 
 function GrassGround({ groundY }: { groundY: number }) {
   const grassTexture = useMemo(() => {
-    const size = 128;
+    const size = 2048; // Much larger texture for continuous roads
     const canvas = document.createElement('canvas');
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
+    // Draw grass background (scaled for larger texture)
     ctx.fillStyle = '#4ade80';
     ctx.fillRect(0, 0, size, size);
     ctx.fillStyle = '#22c55e';
-    for (let i = 0; i < 1200; i++) {
+    for (let i = 0; i < 20000; i++) { // More grass details for larger texture
       const x = Math.random() * size;
       const y = Math.random() * size;
-      const h = 2 + Math.random() * 4;
-      ctx.fillRect(x, y, 1, h);
+      const h = 3 + Math.random() * 6;
+      const w = 1 + Math.random();
+      ctx.fillRect(x, y, w, h);
     }
     ctx.fillStyle = '#16a34a';
-    for (let i = 0; i < 800; i++) {
+    for (let i = 0; i < 15000; i++) {
       const x = Math.random() * size;
       const y = Math.random() * size;
-      const h = 1 + Math.random() * 3;
-      ctx.fillRect(x, y, 1, h);
+      const h = 2 + Math.random() * 5;
+      const w = 1 + Math.random();
+      ctx.fillRect(x, y, w, h);
+    }
+
+    // Generate random curvy roads (scaled for larger texture)
+    const roadCount = 2 + Math.floor(Math.random() * 2); // 2-3 roads for better spacing
+    const roadWidth = 60; // Much wider roads for the larger texture
+
+    for (let r = 0; r < roadCount; r++) {
+      // Generate random control points for smooth curves
+      const points: { x: number; y: number }[] = [];
+      const pointCount = 4 + Math.floor(Math.random() * 3); // 4-6 control points for simpler, more spread out roads
+
+      // Random starting edge (top, bottom, left, or right)
+      const startEdge = Math.floor(Math.random() * 4);
+      let startX = 0, startY = 0;
+
+      if (startEdge === 0) { // top
+        startX = Math.random() * size;
+        startY = 0;
+      } else if (startEdge === 1) { // right
+        startX = size;
+        startY = Math.random() * size;
+      } else if (startEdge === 2) { // bottom
+        startX = Math.random() * size;
+        startY = size;
+      } else { // left
+        startX = 0;
+        startY = Math.random() * size;
+      }
+
+      points.push({ x: startX, y: startY });
+
+      // Generate middle points with wider spread and less overlap
+      for (let i = 1; i < pointCount - 1; i++) {
+        const progress = i / (pointCount - 1);
+        // Use road index to offset paths and prevent clustering
+        const roadOffset = (r / roadCount) * size;
+        const baseX = progress * size * 0.4 + roadOffset;
+        const baseY = progress * size * 0.4 + roadOffset;
+        const offsetX = (Math.random() - 0.5) * size * 0.5;
+        const offsetY = (Math.random() - 0.5) * size * 0.5;
+        points.push({
+          x: Math.max(0, Math.min(size, baseX + offsetX)),
+          y: Math.max(0, Math.min(size, baseY + offsetY))
+        });
+      }
+
+      // Random ending edge (different from start)
+      const endEdge = (startEdge + 1 + Math.floor(Math.random() * 3)) % 4;
+      let endX = 0, endY = 0;
+
+      if (endEdge === 0) {
+        endX = Math.random() * size;
+        endY = 0;
+      } else if (endEdge === 1) {
+        endX = size;
+        endY = Math.random() * size;
+      } else if (endEdge === 2) {
+        endX = Math.random() * size;
+        endY = size;
+      } else {
+        endX = 0;
+        endY = Math.random() * size;
+      }
+
+      points.push({ x: endX, y: endY });
+
+      // Draw the road using smooth curves (grey pavement)
+      ctx.strokeStyle = '#6b7280'; // grey
+      ctx.lineWidth = roadWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+
+      // Use quadratic curves for smooth transitions
+      for (let i = 1; i < points.length - 1; i++) {
+        const xc = (points[i].x + points[i + 1].x) / 2;
+        const yc = (points[i].y + points[i + 1].y) / 2;
+        ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+      }
+
+      // Final segment
+      const lastPoint = points[points.length - 1];
+      const secondLastPoint = points[points.length - 2];
+      ctx.quadraticCurveTo(secondLastPoint.x, secondLastPoint.y, lastPoint.x, lastPoint.y);
+      ctx.stroke();
     }
 
     const texture = new THREE.CanvasTexture(canvas);
