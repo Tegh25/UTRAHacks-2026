@@ -11,11 +11,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+// Comma-separated for multiple origins (e.g. Vercel production + preview URLs)
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(',').map((s) => s.trim()).filter(Boolean)
+  : ['http://localhost:5173'];
 
 const demoMode = !process.env.ELEVENLABS_API_KEY || !process.env.GEMINI_API_KEY;
 
-app.use(cors({ origin: CLIENT_URL }));
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
 app.use('/api/voice', voiceRoutes);

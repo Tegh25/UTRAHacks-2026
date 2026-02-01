@@ -192,6 +192,34 @@ Host the client on Vercel/Netlify/Cloudflare Pages and the API on Railway/Render
 
 3. The client uses `VITE_API_URL` when set, otherwise `/api` (same origin).
 
+### Railway (API) + Vercel (frontend)
+
+**1. Deploy the API on Railway**
+
+- Create a new project → **Deploy from GitHub repo** (or add the repo).
+- Set **Root Directory** to `UTRA-Hacks/showcase/robot-viewer/server` (or `showcase/robot-viewer/server` depending on repo structure).
+- Railway sets `PORT` automatically; no need to add it.
+- **Variables** (in Railway project → Variables):
+  - `CLIENT_URL` = your Vercel URL **without** trailing slash, e.g. `https://your-app.vercel.app`  
+    For preview deployments (e.g. branch deploys), add those URLs as a comma-separated list:  
+    `https://your-app.vercel.app,https://your-app-git-branch-xxx.vercel.app`
+  - Optional: `ELEVENLABS_API_KEY`, `GEMINI_API_KEY`
+- **Build command:** `npm install && npm run build`
+- **Start command:** `npm start`
+- Deploy, then copy the **public URL** Railway gives you (e.g. `https://robot-viewer-api-production-xxxx.up.railway.app`).
+
+**2. Deploy the frontend on Vercel**
+
+- Import the same repo → **Configure Project**.
+- Set **Root Directory** to `UTRA-Hacks/showcase/robot-viewer/client` (or `showcase/robot-viewer/client`).
+- **Environment Variables** (add for Production, and optionally Preview):
+  - `VITE_API_URL` = Railway API URL **including** `/api`, e.g. `https://robot-viewer-api-production-xxxx.up.railway.app/api`
+- **Build Command:** `npm run build` (default)
+- **Output Directory:** `dist` (default for Vite)
+- Deploy. Your app will be at `https://your-project.vercel.app` and will call the Railway API.
+
+**Order:** Deploy Railway first so you have the API URL, then set `VITE_API_URL` on Vercel to that URL and deploy. If you deploy Vercel first, add `VITE_API_URL` after Railway is live and trigger a redeploy.
+
 ### Getting 404?
 
 - **404 on the main page (blank or “Client not built”)** — The server has no `server/public` folder. Run the full build so the client is copied: from `robot-viewer/`, run `cd server && npm run build:full`, then start the server.
