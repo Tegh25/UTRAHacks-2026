@@ -18,10 +18,10 @@ const MAX_REVERSE = 2.6;
 const TURN_RATE = 2.6;
 const BOOST_MULT = 3;
 const WHEEL_SPIN_FACTOR = 8;
-const SMOKE_MAX = 160;
-const SMOKE_SPAWN_RATE = 22;
-const SMOKE_RISE = 0.8;
-const SMOKE_DRIFT = 0.25;
+const SMOKE_MAX = 200;
+const SMOKE_SPAWN_RATE = 50;
+const SMOKE_RISE = 0.2;
+const SMOKE_DRIFT = 0.5;
 const SMOKE_DECAY = 1.2;
 const UP_AXIS = new THREE.Vector3(0, 1, 0);
 const GRASS_SIZE = 300;
@@ -115,6 +115,13 @@ function LoadedModel() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Don't capture keys when user is typing in an input field
+      const target = event.target as HTMLElement;
+      const isTyping = target?.tagName === 'INPUT' ||
+                       target?.tagName === 'TEXTAREA' ||
+                       target?.getAttribute('contenteditable') === 'true';
+      if (isTyping) return;
+
       if (
         ['w', 'W', 'a', 'A', 's', 'S', 'd', 'D', 'b', 'B', 'Shift', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(
           event.key
@@ -156,6 +163,13 @@ function LoadedModel() {
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
+      // Don't capture keys when user is typing in an input field
+      const target = event.target as HTMLElement;
+      const isTyping = target?.tagName === 'INPUT' ||
+                       target?.tagName === 'TEXTAREA' ||
+                       target?.getAttribute('contenteditable') === 'true';
+      if (isTyping) return;
+
       if (
         ['w', 'W', 'a', 'A', 's', 'S', 'd', 'D', 'b', 'B', 'Shift', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(
           event.key
@@ -411,7 +425,7 @@ function LoadedModel() {
 
       const relativeHeading = headingRef.current - baseHeadingRef.current;
       const forward = baseForwardRef.current.clone().applyAxisAngle(UP_AXIS, relativeHeading);
-      const displacement = forward.clone().multiplyScalar(speed * delta);
+      const displacement = forward.clone().multiplyScalar(-speed * delta);
       groupRef.current.position.add(displacement);
       groupRef.current.rotation.y = headingRef.current;
 
