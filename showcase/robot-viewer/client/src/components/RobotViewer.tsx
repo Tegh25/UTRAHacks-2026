@@ -65,6 +65,9 @@ function LoadedModel() {
   const { camera, controls } = useThree();
   const { playSound } = useUISounds();
 
+  const driftSoundRef = useRef<HTMLAudioElement | null>(null);
+  const isDriftingRef = useRef(false);
+
   const speedRef = useRef(0);
   const headingRef = useRef(0);
   const headingInitRef = useRef(false);
@@ -112,6 +115,21 @@ function LoadedModel() {
   useEffect(() => {
     setGroundY(groundY);
   }, [groundY, setGroundY]);
+
+  // Initialize drift sound
+  useEffect(() => {
+    const audio = new Audio('/sounds/ui/drift.mp3');
+    audio.loop = true;
+    audio.volume = 0;
+    audio.preload = 'auto';
+    driftSoundRef.current = audio;
+
+    return () => {
+      audio.pause();
+      audio.src = '';
+      driftSoundRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -420,6 +438,25 @@ function LoadedModel() {
 
         if (steerStrength > 0) {
           headingRef.current += steer * TURN_RATE * steerStrength * steerDir * delta;
+        }
+      }
+
+      // Drift sound effect
+      if (driftSoundRef.current) {
+        if (isDrifting && !isDriftingRef.current) {
+          // Start drifting
+          driftSoundRef.current.currentTime = 0;
+          driftSoundRef.current.volume = 0.3;
+          driftSoundRef.current.play().catch(() => {});
+          isDriftingRef.current = true;
+        } else if (!isDrifting && isDriftingRef.current) {
+          // Stop drifting
+          driftSoundRef.current.pause();
+          isDriftingRef.current = false;
+        } else if (isDrifting) {
+          // Adjust volume based on speed
+          const driftVolume = Math.min(0.3 + (speedFactor * 0.3), 0.6);
+          driftSoundRef.current.volume = driftVolume;
         }
       }
 

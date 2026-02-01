@@ -2,7 +2,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useRobotStore } from './useRobotModel';
 
-type UISoundId = 'select-part' | 'hover-part' | 'attach-part' | 'detach-part' | 'whoosh' | 'success' | 'error';
+type UISoundId = 'select-part' | 'hover-part' | 'attach-part' | 'detach-part' | 'whoosh' | 'success' | 'error' | 'drift';
 
 interface UISoundMap {
   [key: string]: HTMLAudioElement;
@@ -23,6 +23,7 @@ export function useUISounds() {
       'whoosh',
       'success',
       'error',
+      'drift',
     ];
 
     soundIds.forEach((id) => {

@@ -39,6 +39,20 @@ const TOUR_STEPS: TourStep[] = [
     ],
   },
   {
+    title: 'Ultrasonic Sensor',
+    summary: 'The ultrasonic distance sensor measures the distance to obstacles ahead using sound waves. Critical for obstacle detection and avoidance on the red track.',
+    parts: [
+      { id: 'ultrasonic-sensor-1', role: 'Ultrasonic distance sensor. Continuously monitors distance ahead to detect obstacles.' },
+    ],
+  },
+  {
+    title: 'Color Sensor',
+    summary: 'The color/light sensor detects surface colors beneath the robot. Used for line following, detecting blue walls, and finding the black center in the bullseye challenge.',
+    parts: [
+      { id: 'color-sensor-1', role: 'Color/light sensor. Detects red lines, blue walls, black center, and other surface colors.' },
+    ],
+  },
+  {
     title: 'Arduino Brain',
     summary: 'The Arduino Uno runs all our code: line following, obstacle avoidance, bullseye centering, and shooting logic.',
     parts: [
@@ -71,49 +85,129 @@ const TOUR_STEPS: TourStep[] = [
 
 type Section = 'none' | 'sound' | 'tour' | 'algorithms';
 
-const BULLSEYE_ALGORITHM = `Section 1: Bullseye (Target Shooting). Find center from random start.
+type AlgorithmStep = {
+  description: string;
+  highlightParts: string[]; // Part IDs to highlight for this step
+};
 
-1. Move straight toward the edge (any direction) until the color sensor detects BLUE (blue zone at the wall).
+type Algorithm = {
+  name: string;
+  steps: AlgorithmStep[];
+};
 
-2. Stop. Do a 180° turn (face the opposite direction).
+const BULLSEYE_ALGORITHM: Algorithm = {
+  name: 'BULLSEYE ALGORITHM (TARGET CENTERING)',
+  steps: [
+    {
+      description: 'Use the color sensor to detect the color directly beneath the robot.',
+      highlightParts: ['color-sensor-1'],
+    },
+    {
+      description: 'Drive straight in any direction until the color sensor detects BLUE at the wall.',
+      highlightParts: ['wheel-1', 'wheel-2', 'color-sensor-1'],
+    },
+    {
+      description: 'Stop and turn 180°.',
+      highlightParts: ['wheel-1', 'wheel-2', 'motor-driver-1'],
+    },
+    {
+      description: 'Drive straight toward the opposite side until BLUE is detected again.',
+      highlightParts: ['wheel-1', 'wheel-2', 'color-sensor-1'],
+    },
+    {
+      description: 'Use the Arduino millis() function to measure the total travel time T.',
+      highlightParts: ['arduino-1'],
+    },
+    {
+      description: 'Compute half-time = T / 2.',
+      highlightParts: ['arduino-1'],
+    },
+    {
+      description: 'Turn 180° to face back toward the center.',
+      highlightParts: ['wheel-1', 'wheel-2', 'motor-driver-1'],
+    },
+    {
+      description: 'Drive forward for exactly T / 2 using millis() timing.',
+      highlightParts: ['wheel-1', 'wheel-2', 'arduino-1'],
+    },
+    {
+      description: 'Stop. The robot is now centered along this axis.',
+      highlightParts: ['wheel-1', 'wheel-2'],
+    },
+    {
+      description: 'Turn 90° to align with the perpendicular axis.',
+      highlightParts: ['wheel-1', 'wheel-2', 'motor-driver-1'],
+    },
+    {
+      description: 'Move forward until: The color sensor detects BLACK, or the same edge-to-edge timing method is repeated.',
+      highlightParts: ['wheel-1', 'wheel-2', 'color-sensor-1', 'arduino-1'],
+    },
+    {
+      description: 'Once BLACK is detected, the robot is at the center.',
+      highlightParts: ['color-sensor-1'],
+    },
+    {
+      description: 'Shoot or launch the ball to score.',
+      highlightParts: ['arduino-1'],
+    },
+  ],
+};
 
-3. Travel straight toward the opposite side. Measure and record the time T until you detect BLUE again (or reach the opposite edge).
-
-4. Half-time = T ÷ 2. This is the time needed to reach the center along this axis.
-
-5. Do a 180° turn again (face back toward the center).
-
-6. Travel forward for exactly half-time (T/2). Stop. You are now at the center along this axis.
-
-7. Do a 90° turn (to align with the perpendicular axis).
-
-8. Move straight until you are in the middle:
-   - Option A: Move until the color sensor detects BLACK (black center zone), then stop.
-   - Option B: Repeat the same edge, measure, half-time procedure on this axis, then stop at center.
-
-9. You are at the black center. Shoot or launch the ball forward for scoring.`;
-
-const RED_TRACK_ALGORITHM = `Red Track. Obstacle avoidance with ultrasonic.
-
-1. Follow the red line (line following as normal).
-
-2. Continuously read the ultrasonic sensor for distance to obstacles ahead.
-
-3. If distance < 15 cm (or 10 cm; pick a threshold, e.g. 10 to 15 cm):
-   - Stop forward motion.
-   - Execute a semi-circle around the obstacle:
-     - Turn ~90° in one direction (e.g. left or right).
-     - Drive forward in an arc for a set time or until the line is detected again.
-     - Turn back toward the line (about 90° the other way) to rejoin the path.
-   - Resume line following.
-
-4. If distance ≥ threshold, keep following the line as normal.
-
-5. Repeat until you reach the end of the red track (e.g. box drop off, reupload point).`;
+const RED_TRACK_ALGORITHM: Algorithm = {
+  name: 'RED TRACK ALGORITHM (OBSTACLES + BOX HANDLING)',
+  steps: [
+    {
+      description: 'Follow the red line using the color sensor.',
+      highlightParts: ['color-sensor-1', 'wheel-1', 'wheel-2'],
+    },
+    {
+      description: 'Continuously measure distance ahead using the ultrasonic sensor.',
+      highlightParts: ['ultrasonic-sensor-1'],
+    },
+    {
+      description: 'If an obstacle is detected within the threshold distance: Stop forward motion.',
+      highlightParts: ['ultrasonic-sensor-1', 'arduino-1', 'wheel-1', 'wheel-2'],
+    },
+    {
+      description: 'Turn approximately 90°.',
+      highlightParts: ['wheel-1', 'wheel-2', 'motor-driver-1'],
+    },
+    {
+      description: 'Drive in a curved path to go around the obstacle.',
+      highlightParts: ['wheel-1', 'wheel-2', 'motor-driver-1'],
+    },
+    {
+      description: 'Re-align with the red line and resume line following.',
+      highlightParts: ['color-sensor-1', 'wheel-1', 'wheel-2'],
+    },
+    {
+      description: 'If no obstacle is detected, continue line following normally.',
+      highlightParts: ['color-sensor-1', 'wheel-1', 'wheel-2'],
+    },
+    {
+      description: 'While on the red track: Use a custom-built arm made from 3D printed parts.',
+      highlightParts: ['arduino-1'],
+    },
+    {
+      description: 'The arm hooks and unhooks boxes.',
+      highlightParts: ['arduino-1'],
+    },
+    {
+      description: 'Boxes are transported and dropped into the blue box area as required.',
+      highlightParts: ['wheel-1', 'wheel-2', 'arduino-1'],
+    },
+    {
+      description: 'Repeat until the end of the red track is reached.',
+      highlightParts: ['color-sensor-1', 'ultrasonic-sensor-1', 'wheel-1', 'wheel-2', 'arduino-1'],
+    },
+  ],
+};
 
 export default function RightSidebar() {
   const [activeSection, setActiveSection] = useState<Section>('none');
   const [stepIndex, setStepIndex] = useState(0);
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState<'bullseye' | 'redtrack' | null>(null);
+  const [algorithmStepIndex, setAlgorithmStepIndex] = useState(0);
 
   // Store selectors
   const cameraMode = useRobotStore((s) => s.cameraMode);
@@ -216,9 +310,59 @@ export default function RightSidebar() {
         startTour();
       }
     } else {
+      if (section === 'algorithms' && activeSection !== 'algorithms') {
+        // Reset algorithm state when opening
+        setSelectedAlgorithm(null);
+        setAlgorithmStepIndex(0);
+      } else if (section === 'algorithms' && activeSection === 'algorithms') {
+        // Closing algorithms section - clear highlights
+        clearHighlights();
+        selectPart(null);
+      }
       setActiveSection(activeSection === section ? 'none' : section);
     }
   };
+
+  const startAlgorithmWalkthrough = (algorithm: 'bullseye' | 'redtrack') => {
+    setSelectedAlgorithm(algorithm);
+    setAlgorithmStepIndex(0);
+  };
+
+  const goBackToAlgorithmList = () => {
+    setSelectedAlgorithm(null);
+    setAlgorithmStepIndex(0);
+    clearHighlights();
+    selectPart(null);
+  };
+
+  const goToPreviousAlgorithmStep = () => {
+    setAlgorithmStepIndex((current) => Math.max(current - 1, 0));
+  };
+
+  const goToNextAlgorithmStep = () => {
+    const currentAlgorithm = selectedAlgorithm === 'bullseye' ? BULLSEYE_ALGORITHM : RED_TRACK_ALGORITHM;
+    if (algorithmStepIndex >= currentAlgorithm.steps.length - 1) {
+      // Finished all steps, go back to algorithm list
+      goBackToAlgorithmList();
+    } else {
+      setAlgorithmStepIndex((current) => current + 1);
+    }
+  };
+
+  // Highlight parts when algorithm step changes
+  useEffect(() => {
+    if (activeSection !== 'algorithms' || !selectedAlgorithm) return;
+
+    const currentAlgorithm = selectedAlgorithm === 'bullseye' ? BULLSEYE_ALGORITHM : RED_TRACK_ALGORITHM;
+    const currentStep = currentAlgorithm.steps[algorithmStepIndex];
+
+    if (currentStep && currentStep.highlightParts.length > 0) {
+      highlightParts(currentStep.highlightParts);
+    } else {
+      clearHighlights();
+    }
+    selectPart(null);
+  }, [activeSection, selectedAlgorithm, algorithmStepIndex, highlightParts, clearHighlights, selectPart]);
 
   return (
     <div className="fixed top-4 right-4 z-20 w-64 right-sidebar-container">
@@ -409,19 +553,113 @@ export default function RightSidebar() {
           </button>
 
           {activeSection === 'algorithms' && (
-            <div className="px-3 pb-3 space-y-3">
-              <div>
-                <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1.5">Bullseye (Section 1)</div>
-                <pre className="text-[10px] text-gray-700 leading-relaxed whitespace-pre-wrap font-sans bg-gray-50 border border-gray-200 rounded-lg p-2.5 max-h-[280px] overflow-y-auto custom-scrollbar">
-                  {BULLSEYE_ALGORITHM}
-                </pre>
-              </div>
-              <div>
-                <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1.5">Red Track (obstacle avoidance)</div>
-                <pre className="text-[10px] text-gray-700 leading-relaxed whitespace-pre-wrap font-sans bg-gray-50 border border-gray-200 rounded-lg p-2.5 max-h-[220px] overflow-y-auto custom-scrollbar">
-                  {RED_TRACK_ALGORITHM}
-                </pre>
-              </div>
+            <div className="px-3 pb-3">
+              {!selectedAlgorithm ? (
+                // Algorithm selection screen
+                <div className="space-y-2">
+                  <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-2">
+                    Select an algorithm to start walkthrough
+                  </div>
+                  <button
+                    onClick={() => startAlgorithmWalkthrough('bullseye')}
+                    className="w-full text-left px-3 py-2.5 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                  >
+                    <div className="text-xs font-semibold text-blue-700">Bullseye Algorithm</div>
+                    <div className="text-[10px] text-blue-600 mt-0.5">Target Centering</div>
+                  </button>
+                  <button
+                    onClick={() => startAlgorithmWalkthrough('redtrack')}
+                    className="w-full text-left px-3 py-2.5 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
+                  >
+                    <div className="text-xs font-semibold text-red-700">Red Track Algorithm</div>
+                    <div className="text-[10px] text-red-600 mt-0.5">Obstacles + Box Handling</div>
+                  </button>
+                </div>
+              ) : (
+                // Algorithm walkthrough screen
+                (() => {
+                  const currentAlgorithm = selectedAlgorithm === 'bullseye' ? BULLSEYE_ALGORITHM : RED_TRACK_ALGORITHM;
+                  const currentStep = currentAlgorithm.steps[algorithmStepIndex];
+                  const totalSteps = currentAlgorithm.steps.length;
+
+                  return (
+                    <div>
+                      {/* Header */}
+                      <div className="mb-3">
+                        <button
+                          onClick={goBackToAlgorithmList}
+                          className="text-[10px] text-gray-500 hover:text-gray-700 flex items-center gap-1 mb-2"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-3 w-3"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                          Back to algorithms
+                        </button>
+                        <div className="text-[10px] text-gray-400 uppercase tracking-wide">
+                          Step {algorithmStepIndex + 1} of {totalSteps}
+                        </div>
+                        <h3 className={`text-sm font-semibold ${selectedAlgorithm === 'bullseye' ? 'text-blue-700' : 'text-red-700'}`}>
+                          {currentAlgorithm.name}
+                        </h3>
+                      </div>
+
+                      {/* Current Step */}
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3 min-h-[120px]">
+                        <p className="text-xs text-gray-700 leading-relaxed">
+                          {currentStep.description}
+                        </p>
+                        {currentStep.highlightParts.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-gray-200">
+                            <div className="text-[9px] text-gray-400 uppercase tracking-wide mb-1.5">
+                              Highlighted Parts
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {currentStep.highlightParts.map((partId) => (
+                                <span
+                                  key={partId}
+                                  className="text-[9px] px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded"
+                                >
+                                  {partId}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Navigation */}
+                      <div className="flex items-center justify-between">
+                        <button
+                          onClick={goToPreviousAlgorithmStep}
+                          disabled={algorithmStepIndex === 0}
+                          className="text-[10px] px-2 py-1 rounded border border-gray-200 text-gray-500 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          Previous
+                        </button>
+                        <div className="text-[9px] text-gray-400">
+                          {algorithmStepIndex + 1} / {totalSteps}
+                        </div>
+                        <button
+                          onClick={goToNextAlgorithmStep}
+                          className={`text-[10px] px-2 py-1 rounded transition-colors text-white ${
+                            selectedAlgorithm === 'bullseye'
+                              ? 'bg-blue-600 hover:bg-blue-500'
+                              : 'bg-red-600 hover:bg-red-500'
+                          }`}
+                        >
+                          {algorithmStepIndex >= totalSteps - 1 ? 'Finish' : 'Next'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()
+              )}
             </div>
           )}
         </div>

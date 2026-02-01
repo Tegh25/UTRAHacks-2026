@@ -44,6 +44,20 @@ const partMetadata: Record<string, {
     relatedTo: ['sensor-1', 'arduino-1', 'breadboard-1'],
     functionalRole: 'Detects nearby objects and obstacles using infrared light reflection'
   },
+  'ultrasonic-sensor-1': {
+    category: 'sensors',
+    keywords: ['ultrasonic', 'distance', 'sensor', 'sonar', 'obstacle', 'detection', 'hc-sr04', 'range'],
+    description: 'Ultrasonic distance sensor - measures distance to obstacles ahead using sound waves',
+    relatedTo: ['arduino-1', 'breadboard-1', 'sensor-1', 'sensor-2'],
+    functionalRole: 'Continuously monitors distance ahead to detect obstacles for avoidance'
+  },
+  'color-sensor-1': {
+    category: 'sensors',
+    keywords: ['color', 'light', 'sensor', 'rgb', 'line', 'following', 'detection', 'surface', 'reflectance'],
+    description: 'Color/light sensor - detects surface colors beneath the robot',
+    relatedTo: ['arduino-1', 'breadboard-1', 'wheel-1', 'wheel-2'],
+    functionalRole: 'Detects red lines, blue walls, black center, and other surface colors for navigation'
+  },
   'arduino-1': {
     category: 'control',
     keywords: ['arduino', 'microcontroller', 'brain', 'controller', 'processor', 'uno', 'main', 'cpu', 'computer'],
@@ -96,6 +110,8 @@ const meshNames = [
   'plate-1',
   'sensor-1',
   'sensor-2',
+  'ultrasonic-sensor-1',
+  'color-sensor-1',
   'arduino-1',
   'motor-driver-1',
   'breadboard-1',
