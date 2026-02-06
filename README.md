@@ -2,6 +2,7 @@
 
 **Voice-controlled 3D robot exploration — powered by cutting-edge AI.**
 
+## WASD to move, B to boost speed, Shift to brake!
 Vercel hosted deployment: https://yellow-brownies.vercel.app/
 
 ## What's in this repo
